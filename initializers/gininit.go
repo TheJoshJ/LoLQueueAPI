@@ -14,7 +14,7 @@ var (
 func CreateGinConnection() {
 	handlers.CreateGinHandlers(r)
 
-	ginErr := r.Run(os.Getenv("PORT"))
+	ginErr := r.Run(":" + os.Getenv("PORT"))
 
 	if ginErr != nil {
 		log.Printf("Error connecting to gin services %v", ginErr)
