@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"main/handlers"
+	"os"
 )
 
 var (
@@ -13,7 +14,7 @@ var (
 func CreateGinConnection() {
 	handlers.CreateGinHandlers(r)
 
-	ginErr := r.Run(":8080")
+	ginErr := r.Run(os.Getenv("PORT"))
 
 	if ginErr != nil {
 		log.Printf("Error connecting to gin services %v", ginErr)
