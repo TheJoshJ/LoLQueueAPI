@@ -7,6 +7,7 @@ import (
 )
 
 func Queue(c *gin.Context) {
+	log.Println(c)
 	var command models.Queue
 	err := c.BindJSON(command)
 	if err != nil {
