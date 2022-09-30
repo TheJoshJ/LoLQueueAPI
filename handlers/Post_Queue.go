@@ -14,10 +14,11 @@ func Queue(c *gin.Context) {
 			"message": err,
 		})
 		return
-	}
-	c.JSON(200, gin.H{
-		"message": "Data Received!",
-	})
+	} else {
+		c.JSON(200, gin.H{
+			"message": "Data Received!",
+		})
 
-	log.Printf("%#v", command)
+		log.Printf("%#v", command)
+	}
 }
