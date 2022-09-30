@@ -7,11 +7,8 @@ import (
 	"os/signal"
 )
 
-func init() {
-	initializers.CreatePostgresConnect()
-}
-
 func main() {
+	initializers.CreatePostgresConnect()
 	initializers.CreateGinConnection()
 
 	stop := make(chan os.Signal, 1)
