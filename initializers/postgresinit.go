@@ -1,21 +1,17 @@
 package initializers
 
 import (
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	"database/sql"
 	"log"
-	"os"
 )
 
-func CreatePostgresConnect() *gorm.DB {
-	dsn := os.Getenv("DATABASE_URL")
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-
+func CreatePostgresConnect() {
+	connect := "user=pqgotest dbname=pqgotest sslmode=verify-full"
+	db, err := sql.Open("postgres", connect)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal(err)
 	} else {
-		log.Println("Connected to the postgres database.")
+		log.Println("Connected to Postgres DB")
 	}
-
-	return db
+	var Session *sql.DB = db
 }
