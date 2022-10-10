@@ -66,4 +66,6 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(reply)
 	}
 	log.Println(string(reply))
+
+	//this is a comment so I can commit it again
 }
