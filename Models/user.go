@@ -1,8 +1,9 @@
 package Models
 
 type UserPost struct {
-	Username string `json:"username"`
-	Server   string `json:"server"`
+	Username  string `json:"username"`
+	Server    string `json:"server"`
+	Discordid string `json:"discordid"`
 }
 
 type UserDB struct {

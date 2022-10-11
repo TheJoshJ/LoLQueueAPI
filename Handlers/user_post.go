@@ -2,7 +2,6 @@ package Handlers
 
 import (
 	"encoding/json"
-	"github.com/gorilla/mux"
 	"github.com/mitchellh/mapstructure"
 	"io"
 	"log"
@@ -15,11 +14,11 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	//find the ID of the user that we are currently creating
-	params := mux.Vars(r)
-
 	//create a new instance of a struct for us to process
 	var newUser Models.UserPost
+
+	//find the ID of the user that we are currently creating
+	newUser.Discordid = r.FormValue("discordid")
 
 	//process the information sent from the bot into the struct
 	newUser.Username = r.FormValue("username")
@@ -40,7 +39,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	//save the user struct with all the udpated information to PostgresDB
 	newUserDB := Models.UserDB{
-		params["id"],
+		newUser.Discordid,
 		newUser.Username,
 		newUser.Server,
 		bySummonerName.Puuid,
