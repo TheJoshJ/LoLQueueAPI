@@ -42,7 +42,7 @@ func (c *Connect) MuxInit() {
 
 	//define the server
 	srv := &http.Server{
-		Addr:         "0.0.0.0:" + os.Getenv("PORT"),
+		Addr:         "0.0.0.0:8080",
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
 		IdleTimeout:  time.Second * 60,
