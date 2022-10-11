@@ -40,7 +40,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	//save the user struct with all the udpated information to PostgresDB
 	newUserDB := Models.UserDB{
-		params["uid"],
+		params["id"],
 		newUser.Username,
 		newUser.Server,
 		bySummonerName.Puuid,
@@ -110,7 +110,10 @@ func getRankedInfo(Id string) Models.LeagueRanked {
 	err = json.Unmarshal(body, &rawData)
 
 	var rankedinfo Models.LeagueRanked
-	mapstructure.Decode(rawData[0], &rankedinfo)
+	err = mapstructure.Decode(rawData[0], &rankedinfo)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	return rankedinfo
 }
