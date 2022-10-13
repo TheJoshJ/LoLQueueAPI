@@ -41,12 +41,12 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	//save the user struct with all the udpated information to PostgresDB
 	newUserDB := Models.UserDB{
-		newUser.Discordid,
-		newUser.Username,
-		newUser.Server,
-		bySummonerName.Puuid,
-		bySummonerName.Id,
-		rankedinfo.Tier,
+		Discordid:  newUser.Discordid,
+		Username:   newUser.Username,
+		Server:     newUser.Server,
+		Puuid:      bySummonerName.Puuid,
+		Id:         bySummonerName.Id,
+		RankedTier: rankedinfo.Tier,
 	}
 
 	//add the data to the database
@@ -107,13 +107,12 @@ func getRankedInfo(Id string) Models.LeagueRanked {
 		log.Fatalln(err)
 	}
 
-	if response.ContentLength == 0 {
-		body, err := io.ReadAll(response.Body)
-		if err != nil {
-			log.Fatalln(err)
-		}
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
-		log.Println(string(body))
+	if len(string(body)) != 2 {
 
 		err = json.Unmarshal(body, &rawData)
 		if err != nil {
