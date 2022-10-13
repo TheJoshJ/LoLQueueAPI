@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"flag"
 	"github.com/gorilla/mux"
-	_ "github.com/lib/pq"
 	"log"
 	"net/http"
 	"os"
@@ -20,13 +19,9 @@ type Connect struct {
 
 func (c *Connect) CreatePostgresConnect() {
 
-	connStr := "postgresql://postgres:" + os.Getenv("PGPASSWORD") + "@" + os.Getenv("PGHOST") + ".railway.app:" + os.Getenv("PGPORT") + "/railway"
-	db, err := sql.Open("postgres", connStr)
-	c.db = db
+	db, err := sql.Open("postgresql", "postgres://$PGUSER:$PGPASS@$PGHOST/railway")
 	if err != nil {
 		log.Fatal(err)
-	} else {
-		log.Println("Connected to Postgres DB")
 	}
 }
 

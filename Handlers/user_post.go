@@ -2,6 +2,7 @@ package Handlers
 
 import (
 	"encoding/json"
+	_ "github.com/lib/pq"
 	"github.com/mitchellh/mapstructure"
 	"io"
 	"log"
@@ -17,25 +18,26 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	//create a new instance of a struct for us to process
 	var newUser Models.UserPost
 
-	//find the ID of the user that we are currently creating
+	//process the information sent via the PostForm request
 	newUser.Discordid = r.FormValue("discordid")
-
-	//process the information sent from the bot into the struct
 	newUser.Username = r.FormValue("username")
 	newUser.Server = r.FormValue("server")
 
-	//log.Println(newUser)
+	//check to see if the user already exists
 
 	//get the puuid, encrypted id, and ranked tier from Riot's API
 	bySummonerName := getBySummonerName(newUser.Username)
 	rankedinfo := getRankedInfo(bySummonerName.Id)
 
-	//account for players who do not play ranked
+	//account for players who do not play ranked or does not exist
+	if bySummonerName.Name == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
 	if rankedinfo.Tier == "" {
 		rankedinfo.Tier = "UNRANKED"
 	}
-
-	//log.Printf("This is what we have prior to the struct being added to the DB \n%#v", rankedinfo)
 
 	//save the user struct with all the udpated information to PostgresDB
 	newUserDB := Models.UserDB{
@@ -62,7 +64,6 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println(string(reply))
 	return
-
 }
 
 func getBySummonerName(Username string) Models.RiotBySummonerName {
@@ -74,18 +75,25 @@ func getBySummonerName(Username string) Models.RiotBySummonerName {
 	request.Header.Set("X-Riot-Token", os.Getenv("RIOTKEY"))
 	response, _ := client.Do(request)
 
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		log.Fatalln(err)
+	if response.StatusCode != 404 {
+
+		body, err := io.ReadAll(response.Body)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		err = json.Unmarshal(body, &bySummonerName)
+
+		log.Println(bySummonerName)
+
+		return bySummonerName
 	}
-
-	err = json.Unmarshal(body, &bySummonerName)
-
 	return bySummonerName
 }
 
 func getRankedInfo(Id string) Models.LeagueRanked {
 
+	var rankedinfo Models.LeagueRanked
 	var rawData []map[string]interface{}
 
 	client := &http.Client{}
@@ -99,20 +107,24 @@ func getRankedInfo(Id string) Models.LeagueRanked {
 		log.Fatalln(err)
 	}
 
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		log.Fatalln(err)
+	if response.ContentLength == 0 {
+		body, err := io.ReadAll(response.Body)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		log.Println(string(body))
+
+		err = json.Unmarshal(body, &rawData)
+		if err != nil {
+			log.Printf("error unmarshalling %v", err)
+		}
+		err = mapstructure.Decode(rawData[0], &rankedinfo)
+		if err != nil {
+			log.Printf("error decoding %v", err)
+		}
+		return rankedinfo
+	} else {
+		return rankedinfo
 	}
-
-	log.Println(string(body))
-
-	err = json.Unmarshal(body, &rawData)
-
-	var rankedinfo Models.LeagueRanked
-	err = mapstructure.Decode(rawData[0], &rankedinfo)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	return rankedinfo
 }
