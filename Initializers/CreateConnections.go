@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"flag"
 	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
 	"log"
 	"net/http"
 	"os"
@@ -19,10 +20,12 @@ type Connect struct {
 
 func (c *Connect) CreatePostgresConnect() {
 
-	db, err := sql.Open("postgresql", "postgres://$PGUSER:$PGPASS@$PGHOST/railway")
+	db, err := sql.Open("postgres", "postgres://$PGUSER:$PGPASS@$PGHOST/railway")
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	c.db = db
 }
 
 func (c *Connect) MuxInit() {
@@ -63,7 +66,10 @@ func (c *Connect) MuxInit() {
 
 	defer cancel()
 
-	srv.Shutdown(ctx)
+	err := srv.Shutdown(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	log.Println("shutting down")
 	os.Exit(0)
