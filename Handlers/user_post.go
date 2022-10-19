@@ -3,12 +3,9 @@ package Handlers
 import (
 	"encoding/json"
 	_ "github.com/lib/pq"
-	"github.com/mitchellh/mapstructure"
-	"io"
-	"log"
 	"main/Models"
+	"main/riot_api"
 	"net/http"
-	"os"
 )
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -23,11 +20,16 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	newUser.Username = r.FormValue("username")
 	newUser.Server = r.FormValue("server")
 
+	if newUser.Discordid == "" || newUser.Username == "" || newUser.Server == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	//check to see if the user already exists
 
 	//get the puuid, encrypted id, and ranked tier from Riot's API
-	bySummonerName := getBySummonerName(newUser.Username)
-	rankedinfo := getRankedInfo(bySummonerName.Id)
+	bySummonerName := riot_api.GetBySummonerName(newUser.Username, newUser.Server)
+	rankedinfo := riot_api.GetRankedInfo(bySummonerName.Id, newUser.Server)
 
 	//account for players who do not play ranked or does not exist
 	if bySummonerName.Name == "" {
@@ -61,69 +63,5 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
-	}
-	log.Println(string(reply))
-	return
-}
-
-func getBySummonerName(Username string) Models.RiotBySummonerName {
-
-	var bySummonerName Models.RiotBySummonerName
-
-	client := &http.Client{}
-	request, _ := http.NewRequest("GET", ("https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/" + Username), nil)
-	request.Header.Set("X-Riot-Token", os.Getenv("RIOTKEY"))
-	response, _ := client.Do(request)
-
-	if response.StatusCode != 404 {
-
-		body, err := io.ReadAll(response.Body)
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		err = json.Unmarshal(body, &bySummonerName)
-
-		log.Println(bySummonerName)
-
-		return bySummonerName
-	}
-	return bySummonerName
-}
-
-func getRankedInfo(Id string) Models.LeagueRanked {
-
-	var rankedinfo Models.LeagueRanked
-	var rawData []map[string]interface{}
-
-	client := &http.Client{}
-	request, err := http.NewRequest("GET", ("https://na1.api.riotgames.com/lol/league/v4/entries/by-summoner/" + Id), nil)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	request.Header.Set("X-Riot-Token", os.Getenv("RIOTKEY"))
-	response, err := client.Do(request)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	if len(string(body)) != 2 {
-
-		err = json.Unmarshal(body, &rawData)
-		if err != nil {
-			log.Printf("error unmarshalling %v", err)
-		}
-		err = mapstructure.Decode(rawData[0], &rankedinfo)
-		if err != nil {
-			log.Printf("error decoding %v", err)
-		}
-		return rankedinfo
-	} else {
-		return rankedinfo
 	}
 }

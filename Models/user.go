@@ -14,3 +14,15 @@ type UserDB struct {
 	Id         string `json:"id"`
 	RankedTier string `json:"RankedTier"`
 }
+
+type UserLookup struct {
+	Username string `json:"username"`
+	Server   string `json:"server"`
+}
+
+type LookupResponse struct {
+	Username  string            `json: "username"`
+	Rank      string            `json: "rank"`
+	Tier      string            `json: "tier"`
+	Champions []ChampionMastery `json: "champions"`
+}

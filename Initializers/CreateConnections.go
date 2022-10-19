@@ -18,11 +18,19 @@ type Connect struct {
 	db     *sql.DB
 }
 
+var DataSource string = "postgresql://" + os.Getenv("PGUSER") + os.Getenv("PGPASS") + "@" + os.Getenv("PGHOST") + ":" + os.Getenv("PGPORT") + "/railway"
+
 func (c *Connect) CreatePostgresConnect() {
 
-	db, err := sql.Open("postgres", "postgres://$PGUSER:$PGPASS@$PGHOST/railway")
+	db, err := sql.Open("postgres", DataSource)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if err = db.Ping(); err != nil {
+		log.Fatal(err)
+	} else {
+		log.Println("Connected to Postgres DB")
 	}
 
 	c.db = db
