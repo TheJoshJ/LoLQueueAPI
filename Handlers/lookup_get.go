@@ -33,11 +33,6 @@ func ProfileLookup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if rankedinfo.Tier == "" {
-		rankedinfo.Tier = "UNRANKED"
-		rankedinfo.Rank = "0"
-	}
-
 	lookupResponse := Models.LookupResponse{
 		Username:  userSearch.Username,
 		Rank:      rankedinfo.Rank,

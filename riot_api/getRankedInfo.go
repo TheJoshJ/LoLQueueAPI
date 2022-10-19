@@ -6,6 +6,7 @@ import (
 	"main/Models"
 	"net/http"
 	"os"
+	"strings"
 )
 
 func GetRankedInfo(Id string, server string) Models.LeagueRanked {
@@ -46,5 +47,14 @@ func GetRankedInfo(Id string, server string) Models.LeagueRanked {
 			Rank: "",
 		}
 	}
+
+	if rankedinfo.Tier == "" {
+		rankedinfo.Tier = "UNRANKED"
+		rankedinfo.Rank = ""
+	}
+
+	//change the all caps tier to be a title
+	rankedinfo.Tier = strings.ToTitle(rankedinfo.Tier)
+
 	return rankedinfo
 }
