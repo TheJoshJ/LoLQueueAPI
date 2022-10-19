@@ -34,10 +34,12 @@ func ProfileLookup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	lookupResponse := Models.LookupResponse{
-		Username:  userSearch.Username,
-		Rank:      rankedinfo.Rank,
-		Tier:      rankedinfo.Tier,
-		Champions: championMastery,
+		Username:      userSearch.Username,
+		Rank:          rankedinfo.Rank,
+		Tier:          rankedinfo.Tier,
+		Champions:     championMastery,
+		Level:         bySummonerName.SummonerLevel,
+		ProfileIconId: bySummonerName.ProfileIconId,
 	}
 
 	reply, err := json.Marshal(lookupResponse)

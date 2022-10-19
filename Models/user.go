@@ -21,8 +21,10 @@ type UserLookup struct {
 }
 
 type LookupResponse struct {
-	Username  string            `json: "username"`
-	Rank      string            `json: "rank"`
-	Tier      string            `json: "tier"`
-	Champions []ChampionMastery `json: "champions"`
+	Username      string            `json:"username"`
+	Tier          string            `json:"tier"`
+	Rank          string            `json:"rank"`
+	Level         int               `json:"level"`
+	ProfileIconId int               `json:"profileIconId"`
+	Champions     []ChampionMastery `json:"champions"`
 }

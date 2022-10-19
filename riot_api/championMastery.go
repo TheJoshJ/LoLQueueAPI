@@ -9,7 +9,7 @@ import (
 )
 
 func GetChampionMastery(id string, server string) []Models.ChampionMastery {
-	champions := make([]Models.ChampionMastery, 0)
+	var champions []Models.ChampionMastery
 	serverString := translateServerName(server)
 
 	client := &http.Client{}
@@ -26,6 +26,10 @@ func GetChampionMastery(id string, server string) []Models.ChampionMastery {
 		err := json.NewDecoder(response.Body).Decode(&champions)
 		if err != nil {
 			log.Fatalf("error decoding response into []champions \n%v", err)
+		}
+
+		for i, champ := range champions {
+			champions[i].ChampionName = Idtoname(champ.ChampionId)
 		}
 		return champions
 	}
