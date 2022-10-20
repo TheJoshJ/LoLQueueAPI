@@ -34,7 +34,7 @@ func ProfileLookup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	lookupResponse := Models.LookupResponse{
-		Username:      userSearch.Username,
+		Username:      rankedinfo.SummonerName,
 		Rank:          rankedinfo.Rank,
 		Tier:          rankedinfo.Tier,
 		Champions:     championMastery,
