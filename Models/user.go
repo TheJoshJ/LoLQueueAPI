@@ -27,6 +27,6 @@ type LookupResponse struct {
 	Level         int               `json:"level"`
 	ProfileIconId int               `json:"profileIconId"`
 	Champions     []ChampionMastery `json:"champions"`
-	Wins          string            `json:"wins"`
-	Losses        string            `json:"losses"`
+	Wins          int               `json:"wins"`
+	Losses        int               `json:"losses"`
 }
