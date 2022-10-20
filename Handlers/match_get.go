@@ -11,7 +11,8 @@ import (
 
 func MatchGet(w http.ResponseWriter, r *http.Request) {
 	var matchList []string
-	matchData := make([]Models.MatchData, 10)
+	matchesData := make([]Models.MatchData, 10)
+	matchDataReturn := make([]Models.Participants, 10)
 
 	w.Header().Set("Content-Type", "application/json")
 
@@ -34,10 +35,18 @@ func MatchGet(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%#v", matchList)
 
 	for i, matchid := range matchList {
-		matchData[i] = riot_api.MatchInfo(matchid, userSearch.Server)
+		matchesData[i] = riot_api.MatchInfo(matchid, userSearch.Server)
 	}
 
-	reply, err := json.Marshal(matchData)
+	for _, mdata := range matchesData {
+		for i, participant := range mdata.Info.Participants {
+			if participant.Puuid == bySummonerName.Puuid {
+				matchDataReturn[i] = participant
+			}
+		}
+	}
+
+	reply, err := json.Marshal(matchDataReturn)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
