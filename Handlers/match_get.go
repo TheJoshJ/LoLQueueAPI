@@ -46,6 +46,10 @@ func MatchGet(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	for i := range matchesData {
+		matchDataReturn[i].GameMode = matchesData[i].Info.GameMode
+	}
+
 	reply, err := json.Marshal(matchDataReturn)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
