@@ -13,7 +13,7 @@ func GetChampionMastery(id string, server string) []Models.ChampionMastery {
 	serverString := translateServerName(server)
 
 	client := &http.Client{}
-	request, _ := http.NewRequest("GET", ("https://" + serverString + ".api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/" + id + "/top?count=5"), nil)
+	request, _ := http.NewRequest("GET", ("https://" + serverString + ".api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/" + id + "/top?count=6"), nil)
 	request.Header.Set("X-Riot-Token", os.Getenv("RIOTKEY"))
 	response, _ := client.Do(request)
 
