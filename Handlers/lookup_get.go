@@ -40,6 +40,8 @@ func ProfileLookup(w http.ResponseWriter, r *http.Request) {
 		Champions:     championMastery,
 		Level:         bySummonerName.SummonerLevel,
 		ProfileIconId: bySummonerName.ProfileIconId,
+		Wins:          rankedinfo.Wins,
+		Losses:        rankedinfo.Losses,
 	}
 
 	reply, err := json.Marshal(lookupResponse)
