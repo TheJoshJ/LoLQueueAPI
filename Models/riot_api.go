@@ -31,8 +31,8 @@ type LeagueRanked struct {
 	SummonerId   string `json:"summonerId"`
 	SummonerName string `json:"summonerName"`
 	LeaguePoints int    `json:"leaguePoints"`
-	Wins         string `json:"wins"`
-	Losses       string `json:"losses"`
+	Wins         int    `json:"wins"`
+	Losses       int    `json:"losses"`
 	Veteran      bool   `json:"veteran"`
 	Inactive     bool   `json:"inactive"`
 	FreshBlood   bool   `json:"freshBlood"`
