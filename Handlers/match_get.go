@@ -46,13 +46,10 @@ func MatchGet(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	for i := range matchesData {
-		//for idx := len(matchDataReturn); i >= 10{
-		//	if matchesData[i].Info.
-		//}
-		matchDataReturn[i].GameMode = matchesData[i].Info.GameMode
-		matchDataReturn[i].GameID = matchesData[i].Metadata.MatchId
-	}
+	//for i := range matchesData {
+	//	matchDataReturn[i].GameMode = matchesData[i].Info.GameMode
+	//	matchDataReturn[i].GameID = matchesData[i].Metadata.MatchId
+	//}
 
 	reply, err := json.Marshal(matchDataReturn)
 	if err != nil {
