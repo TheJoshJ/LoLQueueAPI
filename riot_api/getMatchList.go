@@ -34,5 +34,6 @@ func MatchList(id string, srv string) []string {
 			log.Fatalf("error decoding response into []matches] \n%v", err)
 		}
 	}
+
 	return matches
 }
