@@ -35,15 +35,15 @@ func MatchGet(w http.ResponseWriter, r *http.Request) {
 		matchesData[i] = riot_api.MatchInfo(matchid, userSearch.Server)
 	}
 
-	for mi, mdata := range matchesData {
-		for pi, participant := range mdata.Info.Participants {
+	for i, mdata := range matchesData {
+		for _, participant := range mdata.Info.Participants {
 			if participant.Puuid == bySummonerName.Puuid {
-				matchDataReturn[mi].GameMode = matchesData[pi].Info.GameMode
-				log.Println(mi)
-				log.Println(matchDataReturn[mi])
+				matchDataReturn[i] = participant
+				log.Println(i)
+				log.Println(matchDataReturn[i])
 			}
-			matchDataReturn[mi].GameID = matchesData[mi].Metadata.MatchId
-			matchDataReturn[mi] = participant
+			matchDataReturn[i].GameID = matchesData[i].Metadata.MatchId
+			matchDataReturn[i].GameMode = matchesData[i].Info.GameMode
 		}
 	}
 
