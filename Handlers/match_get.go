@@ -47,10 +47,6 @@ func MatchGet(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	for _, mdata := range matchesData {
-
-	}
-
 	for i := range matchDataReturn {
 		log.Println(i)
 		log.Println(matchDataReturn[i])
