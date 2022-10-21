@@ -38,7 +38,7 @@ func MatchInfo(matchid string, srv string) Models.MatchData {
 	if response.StatusCode != 404 {
 		err := json.NewDecoder(response.Body).Decode(&match)
 		if err != nil {
-			log.Fatalf("error decoding response into []match] \n%v", err)
+			log.Fatalf("error decoding response into []match \n%v", err)
 		}
 	}
 	return match
