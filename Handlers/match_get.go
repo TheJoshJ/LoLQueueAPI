@@ -38,15 +38,15 @@ func MatchGet(w http.ResponseWriter, r *http.Request) {
 	for _, mdata := range matchesData {
 		for i, participant := range mdata.Info.Participants {
 			if participant.Puuid == bySummonerName.Puuid {
+				matchDataReturn[i].GameMode = matchesData[i].Info.GameMode
+				matchDataReturn[i].GameID = matchesData[i].Metadata.MatchId
 				matchDataReturn[i] = participant
-				log.Println(matchDataReturn[i])
 			}
 		}
 	}
 
-	for i := range matchesData {
-		matchDataReturn[i].GameMode = matchesData[i].Info.GameMode
-		matchDataReturn[i].GameID = matchesData[i].Metadata.MatchId
+	for i := range matchDataReturn {
+		log.Printf("%#v", matchDataReturn[i])
 	}
 
 	reply, err := json.Marshal(matchDataReturn)
