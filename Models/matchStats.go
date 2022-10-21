@@ -56,6 +56,7 @@ type MatchData struct {
 }
 
 type Participants struct {
+	GameID                         string `json:"gameID"`
 	GameMode                       string `json:"gameMode"`
 	Assists                        int    `json:"assists"`
 	BaronKills                     int    `json:"baronKills"`
