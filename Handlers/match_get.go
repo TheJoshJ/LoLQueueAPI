@@ -47,6 +47,11 @@ func MatchGet(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	for i := range matchDataReturn {
+		log.Println(i)
+		log.Println(matchDataReturn[i])
+	}
+
 	log.Printf("%#v", matchDataReturn)
 
 	reply, err := json.Marshal(matchDataReturn)
