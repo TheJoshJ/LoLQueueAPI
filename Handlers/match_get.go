@@ -41,6 +41,7 @@ func MatchGet(w http.ResponseWriter, r *http.Request) {
 				matchDataReturn[i].GameMode = matchesData[i].Info.GameMode
 				matchDataReturn[i].GameID = matchesData[i].Metadata.MatchId
 				matchDataReturn[i] = participant
+				log.Println(matchDataReturn[i])
 			}
 		}
 	}
