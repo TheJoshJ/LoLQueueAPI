@@ -54,6 +54,7 @@ func MatchGet(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
 	_, err = w.Write(reply)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
