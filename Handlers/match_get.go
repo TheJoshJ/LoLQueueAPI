@@ -41,14 +41,13 @@ func MatchGet(w http.ResponseWriter, r *http.Request) {
 				matchDataReturn[i].GameMode = matchesData[i].Info.GameMode
 				matchDataReturn[i].GameID = matchesData[i].Metadata.MatchId
 				matchDataReturn[i] = participant
+				log.Printf("%#v", participant)
 				log.Println(matchDataReturn[i])
 			}
 		}
 	}
 
-	for i := range matchDataReturn {
-		log.Printf("%#v", matchDataReturn[i])
-	}
+	log.Printf("%#v", matchDataReturn)
 
 	reply, err := json.Marshal(matchDataReturn)
 	if err != nil {
