@@ -39,11 +39,11 @@ func MatchGet(w http.ResponseWriter, r *http.Request) {
 		for _, participant := range mdata.Info.Participants {
 			if participant.Puuid == bySummonerName.Puuid {
 				matchDataReturn[i].GameMode = matchesData[i].Info.GameMode
-				matchDataReturn[i].GameID = matchesData[i].Metadata.MatchId
-				matchDataReturn[i] = participant
 				log.Println(i)
 				log.Println(matchDataReturn[i])
 			}
+			matchDataReturn[i].GameID = matchesData[i].Metadata.MatchId
+			matchDataReturn[i] = participant
 		}
 	}
 
