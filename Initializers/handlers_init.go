@@ -11,7 +11,9 @@ func (c *Connect) initializeRoutes() {
 	c.router.HandleFunc("/match/{srv}/{usr}", Handlers.MatchGet).Methods("GET")
 
 	//c.router.HandleFunc("/user/{id}", Handlers.ViewUser).Methods("GET")
+	c.router.HandleFunc("/user", Handlers.GetUser).Methods("GET")
 	c.router.HandleFunc("/user", Handlers.CreateUser).Methods("POST")
+	c.router.HandleFunc("/user", Handlers.UpdateUser).Methods("UPDATE")
 
 	log.Println("Loaded Routes")
 }

@@ -24,7 +24,7 @@ func MatchList(id string, srv string) []string {
 	}
 
 	client := &http.Client{}
-	request, _ := http.NewRequest("GET", ("https://" + region + ".api.riotgames.com/lol/match/v5/matches/by-puuid/" + id + "/ids?count=10"), nil)
+	request, _ := http.NewRequest("GET", ("https://" + region + ".api.riotgames.com/lol/match/v5/matches/by-puuid/" + id + "/ids?count=12"), nil)
 	request.Header.Set("X-Riot-Token", os.Getenv("RIOTKEY"))
 	response, _ := client.Do(request)
 

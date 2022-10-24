@@ -11,8 +11,8 @@ import (
 
 func MatchGet(w http.ResponseWriter, r *http.Request) {
 	var matchList []string
-	matchesData := make([]Models.MatchData, 10)
-	matchDataReturn := make([]Models.Participants, 10)
+	matchesData := make([]Models.MatchData, 12)
+	matchDataReturn := make([]Models.Participants, 12)
 
 	w.Header().Set("Content-Type", "application/json")
 
