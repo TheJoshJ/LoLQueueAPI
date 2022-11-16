@@ -6,7 +6,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/lib/pq v1.10.7
 	github.com/swaggo/http-swagger v1.3.3
-	github.com/swaggo/http-swagger/example/gorilla v0.0.0-20220809182543-c8d62bfd8fdb
+	github.com/swaggo/swag v1.8.7
 )
 
 require (
@@ -18,7 +18,6 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/swaggo/files v0.0.0-20220728132757-551d4a08d97a // indirect
-	github.com/swaggo/swag v1.8.7 // indirect
 	golang.org/x/net v0.2.0 // indirect
 	golang.org/x/sys v0.2.0 // indirect
 	golang.org/x/tools v0.3.0 // indirect

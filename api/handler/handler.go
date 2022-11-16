@@ -9,6 +9,16 @@ import (
 	"net/http"
 )
 
+// Ping godoc
+// @Summary      Pings the API service to ensure that it is active
+// @Description  Ping the API service
+// @Tags         v1
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "Account ID"
+// @Success      200
+// @Failure      404
+// @Router       /ping [get]
 func Ping(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
@@ -18,6 +28,19 @@ func Ping(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// ProfileLookup godoc
+// @Summary      Show an account
+// @Description  Get's the users account information by their Username and Server
+// @Tags         accounts
+// @Accept       json
+// @Produce      json
+// @Param        srv   path      string  true  "Riot Server"
+// @Param        usr   path      string  true  "Username"
+// @Success      200  {object}  models.LookupResponse
+// @Failure      400
+// @Failure      404
+// @Failure      500
+// @Router       /lookup/{srv}/{usr} [get]
 func ProfileLookup(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 

@@ -1,16 +1,108 @@
-basePath: /v2
-host: petstore.swagger.io
+definitions:
+  models.ChampionMastery:
+    properties:
+      championId:
+        type: integer
+      championLevel:
+        type: integer
+      championName:
+        type: string
+      championPoints:
+        type: integer
+      championPointsSinceLastLevel:
+        type: integer
+      championPointsUntilNextLevel:
+        type: integer
+      chestGranted:
+        type: boolean
+      lastPlayTime:
+        type: integer
+      summonerId:
+        type: string
+      tokensEarned:
+        type: integer
+    type: object
+  models.LookupResponse:
+    properties:
+      champions:
+        items:
+          $ref: '#/definitions/models.ChampionMastery'
+        type: array
+      level:
+        type: integer
+      losses:
+        type: integer
+      profileIconId:
+        type: integer
+      rank:
+        type: string
+      tier:
+        type: string
+      username:
+        type: string
+      wins:
+        type: integer
+    type: object
+host: api.LoLQueue.com
 info:
-  contact:
-    email: support@swagger.io
-    name: API Support
-    url: http://www.swagger.io/support
-  description: This is a sample server Petstore server.
-  license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-  termsOfService: http://swagger.io/terms/
-  title: Swagger Example API
+  contact: {}
+  description: This is the documentation for the LoLQueue Api Service
+  termsOfService: There are no terms of service. We accept no responsibility for your
+    ignorance.
+  title: LoLQueue API
   version: "1.0"
-paths: {}
+paths:
+  /lookup/{srv}/{usr}:
+    get:
+      consumes:
+      - application/json
+      description: Get's the users account information by their Username and Server
+      parameters:
+      - description: Riot Server
+        in: path
+        name: srv
+        required: true
+        type: string
+      - description: Username
+        in: path
+        name: usr
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LookupResponse'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Show an account
+      tags:
+      - accounts
+  /ping:
+    get:
+      consumes:
+      - application/json
+      description: Ping the API service
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Not Found
+      summary: Pings the API service to ensure that it is active
+      tags:
+      - v1
 swagger: "2.0"

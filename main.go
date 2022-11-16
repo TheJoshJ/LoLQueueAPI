@@ -7,29 +7,28 @@ import (
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	httpSwagger "github.com/swaggo/http-swagger"
-	_ "github.com/swaggo/http-swagger/example/gorilla/docs"
 	"log"
 	"main/api/handler"
+	_ "main/docs"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
 )
 
+// @title LoLQueue API
+// @version 1.0
+// @description This is the documentation for the LoLQueue Api Service
+// @termsOfService There are no terms of service. We accept no responsibility for your ignorance.
+
+// @host api.LoLQueue.com
+
+var DataSource string = "postgresql://" + os.Getenv("PGUSER") + os.Getenv("PGPASS") + "@" + os.Getenv("PGHOST") + ":" + os.Getenv("PGPORT") + "/railway"
+
 type Connect struct {
 	router *mux.Router
 	db     *sql.DB
 }
-
-// @title Swagger Example API
-// @version 0.1
-// @description This is a sample server Petstore server.
-// @termsOfService There are no terms of service. We accept no responsibility for your ignorance.
-
-// @host petstore.swagger.io
-// @BasePath /v2
-
-var DataSource string = "postgresql://" + os.Getenv("PGUSER") + os.Getenv("PGPASS") + "@" + os.Getenv("PGHOST") + ":" + os.Getenv("PGPORT") + "/railway"
 
 func main() {
 	c := Connect{}
@@ -78,7 +77,7 @@ func (c *Connect) MuxInit() {
 	}()
 
 	//load the Handlers
-	c.initializeRoutes()
+	c.AddRoutes()
 
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, os.Interrupt)
@@ -97,12 +96,12 @@ func (c *Connect) MuxInit() {
 	log.Println("shutting down")
 	os.Exit(0)
 }
-func (c *Connect) initializeRoutes() {
-	c.router.PathPrefix("/docs/*").Handler(httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:8080/docs/doc.json"), //The url pointing to API definition
+func (c *Connect) AddRoutes() {
+	c.router.PathPrefix("/docs/").Handler(httpSwagger.Handler(
+		httpSwagger.URL("http://0.0.0.0:8080/docs/doc.json"), //The url pointing to API definition
 		httpSwagger.DeepLinking(true),
 		httpSwagger.DocExpansion("none"),
-		httpSwagger.DomID("#swagger-ui"),
+		httpSwagger.DomID("swagger-ui"),
 	)).Methods(http.MethodGet)
 
 	c.router.HandleFunc("/ping", api.Ping).Methods("GET")

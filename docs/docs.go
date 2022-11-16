@@ -10,31 +10,173 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "http://swagger.io/terms/",
-        "contact": {
-            "name": "API Support",
-            "url": "http://www.swagger.io/support",
-            "email": "support@swagger.io"
-        },
-        "license": {
-            "name": "Apache 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
-        },
+        "termsOfService": "There are no terms of service. We accept no responsibility for your ignorance.",
+        "contact": {},
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
-    "paths": {}
+    "paths": {
+        "/lookup/{srv}/{usr}": {
+            "get": {
+                "description": "Get's the users account information by their Username and Server",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "Show an account",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Riot Server",
+                        "name": "srv",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Username",
+                        "name": "usr",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.LookupResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/ping": {
+            "get": {
+                "description": "Ping the API service",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "v1"
+                ],
+                "summary": "Pings the API service to ensure that it is active",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Account ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.ChampionMastery": {
+            "type": "object",
+            "properties": {
+                "championId": {
+                    "type": "integer"
+                },
+                "championLevel": {
+                    "type": "integer"
+                },
+                "championName": {
+                    "type": "string"
+                },
+                "championPoints": {
+                    "type": "integer"
+                },
+                "championPointsSinceLastLevel": {
+                    "type": "integer"
+                },
+                "championPointsUntilNextLevel": {
+                    "type": "integer"
+                },
+                "chestGranted": {
+                    "type": "boolean"
+                },
+                "lastPlayTime": {
+                    "type": "integer"
+                },
+                "summonerId": {
+                    "type": "string"
+                },
+                "tokensEarned": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.LookupResponse": {
+            "type": "object",
+            "properties": {
+                "champions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ChampionMastery"
+                    }
+                },
+                "level": {
+                    "type": "integer"
+                },
+                "losses": {
+                    "type": "integer"
+                },
+                "profileIconId": {
+                    "type": "integer"
+                },
+                "rank": {
+                    "type": "string"
+                },
+                "tier": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "wins": {
+                    "type": "integer"
+                }
+            }
+        }
+    }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "petstore.swagger.io",
-	BasePath:         "/v2",
+	Host:             "api.LoLQueue.com",
+	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "Swagger Example API",
-	Description:      "This is a sample server Petstore server.",
+	Title:            "LoLQueue API",
+	Description:      "This is the documentation for the LoLQueue Api Service",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }
