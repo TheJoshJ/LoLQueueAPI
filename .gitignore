@@ -2,6 +2,9 @@
 _obj
 _test
 
+# Local Settings
+.env.local
+
 # Editor Settings
 .idea
 .vscode

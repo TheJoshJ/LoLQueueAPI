@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"flag"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	httpSwagger "github.com/swaggo/http-swagger"
 	"log"
@@ -34,6 +35,7 @@ func main() {
 	c := Connect{}
 	c.CreatePostgresConnect()
 	c.MuxInit()
+	godotenv.Load(".env.local")
 }
 func (c *Connect) CreatePostgresConnect() {
 
@@ -98,7 +100,7 @@ func (c *Connect) MuxInit() {
 }
 func (c *Connect) AddRoutes() {
 	c.router.PathPrefix("/docs/").Handler(httpSwagger.Handler(
-		httpSwagger.URL("http://0.0.0.0:8080/docs/doc.json"), //The url pointing to API definition
+		httpSwagger.URL(os.Getenv("API_URL")), //The url pointing to API definition
 		httpSwagger.DeepLinking(true),
 		httpSwagger.DocExpansion("none"),
 		httpSwagger.DomID("swagger-ui"),
