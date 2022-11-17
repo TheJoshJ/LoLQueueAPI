@@ -32,10 +32,10 @@ type Connect struct {
 }
 
 func main() {
+	godotenv.Load(".env")
 	c := Connect{}
 	c.CreatePostgresConnect()
 	c.MuxInit()
-	godotenv.Load(".env.local")
 }
 func (c *Connect) CreatePostgresConnect() {
 
@@ -100,7 +100,7 @@ func (c *Connect) MuxInit() {
 }
 func (c *Connect) AddRoutes() {
 	c.router.PathPrefix("/docs/").Handler(httpSwagger.Handler(
-		httpSwagger.URL(os.Getenv("API_URL")), //The url pointing to API definition
+		httpSwagger.URL(os.Getenv("API_URL")+"/docs/doc.json"), //The url pointing to API definition
 		httpSwagger.DeepLinking(true),
 		httpSwagger.DocExpansion("none"),
 		httpSwagger.DomID("swagger-ui"),
