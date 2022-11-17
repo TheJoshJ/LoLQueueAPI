@@ -141,6 +141,7 @@ func GetRecentMatches(w http.ResponseWriter, r *http.Request) {
 			matchDataResp[i].Deaths = participant.Deaths
 			matchDataResp[i].Kills = participant.Kills
 			matchDataResp[i].Win = participant.Win
+			matchDataResp[i].ChampionName = participant.ChampionName
 		}
 	}
 

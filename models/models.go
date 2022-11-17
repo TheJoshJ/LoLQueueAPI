@@ -41,12 +41,13 @@ type ChampionMasteryResp struct {
 }
 
 type MatchDataResp struct {
-	GameID   string `json:"gameID"`
-	GameMode string `json:"gameMode"`
-	Assists  int    `json:"assists"`
-	Deaths   int    `json:"deaths"`
-	Kills    int    `json:"kills"`
-	Win      bool   `json:"win"`
+	GameID       string `json:"gameID"`
+	GameMode     string `json:"gameMode"`
+	ChampionName string `json:"championName"`
+	Assists      int    `json:"assists"`
+	Deaths       int    `json:"deaths"`
+	Kills        int    `json:"kills"`
+	Win          bool   `json:"win"`
 }
 
 //structs specific to Riot API
