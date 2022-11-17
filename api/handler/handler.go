@@ -96,14 +96,16 @@ func ProfileLookup(w http.ResponseWriter, r *http.Request) {
 // @Produce      json
 // @Param        srv   path      string  true  "Riot Server"
 // @Param        usr   path      string  true  "Username"
-// @Success      200  {array}    models.MatchData
+// @Success      200  {array}    models.MatchDataResp
 // @Failure      400
 // @Failure      404
 // @Failure      500
 // @Router       /match/{srv}/{usr} [get]
 func GetRecentMatches(w http.ResponseWriter, r *http.Request) {
 	var matchList []string
-	matchData := make([]models.MatchData, 10)
+	matchesData := make([]models.MatchData, 10)
+	matchDataReturn := make([]models.Participants, 10)
+	matchDataResp := make([]models.MatchDataResp, 10)
 
 	w.Header().Set("Content-Type", "application/json")
 
@@ -120,20 +122,34 @@ func GetRecentMatches(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	bySummonerName := riot_api.GetBySummonerName(userSearch.Username, userSearch.Server)
-	matchList = riot_api.MatchListByCount(bySummonerName.Puuid, userSearch.Server, 10)
-
-	log.Printf("%#v", bySummonerName)
-	log.Printf("%#v", matchList)
+	matchList = riot_api.MatchList(bySummonerName.Puuid, userSearch.Server)
 
 	for i, matchid := range matchList {
-		matchData[i] = riot_api.MatchInfo(matchid, userSearch.Server)
+		matchesData[i] = riot_api.MatchInfo(matchid, userSearch.Server)
 	}
 
-	reply, err := json.Marshal(matchData)
+	for i, mdata := range matchesData {
+		for _, participant := range mdata.Info.Participants {
+			if participant.Puuid == bySummonerName.Puuid {
+				matchDataReturn[i] = participant
+				log.Println(i)
+				log.Println(matchDataReturn[i])
+			}
+			matchDataResp[i].GameID = matchesData[i].Metadata.MatchId
+			matchDataResp[i].GameMode = matchesData[i].Info.GameMode
+			matchDataResp[i].Assists = participant.Assists
+			matchDataResp[i].Deaths = participant.Deaths
+			matchDataResp[i].Kills = participant.Kills
+			matchDataResp[i].Win = participant.Win
+		}
+	}
+
+	reply, err := json.Marshal(matchDataResp)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
 	_, err = w.Write(reply)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

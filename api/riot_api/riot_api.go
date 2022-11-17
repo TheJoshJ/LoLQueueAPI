@@ -31,8 +31,8 @@ func Idtoname(id int) string {
 	return "Error"
 }
 
-func GetChampionMastery(id string, server string) []models.ChampionMastery {
-	var champions []models.ChampionMastery
+func GetChampionMastery(id string, server string) []models.ChampionMasteryResp {
+	var champions []models.ChampionMasteryResp
 	serverString := translateServerName(server)
 
 	client := &http.Client{}
@@ -90,16 +90,16 @@ func MatchInfo(matchid string, srv string) models.MatchData {
 	var match models.MatchData
 	var region string
 	if srv == "NA" || srv == "BR" || srv == "LAN" || srv == "LAS" {
-		region = "americas"
+		region = "AMERICAS"
 	}
 	if srv == "KR" || srv == "JP" {
-		region = "asia"
+		region = "ASIA"
 	}
 	if srv == "EUNE" || srv == "EUW" || srv == "TR" || srv == "RU" {
-		region = "europe"
+		region = "EUROPE"
 	}
 	if srv == "OCE" {
-		region = "sea"
+		region = "SEA"
 	}
 
 	client := &http.Client{}
@@ -122,12 +122,24 @@ func MatchInfo(matchid string, srv string) models.MatchData {
 	return match
 }
 
-func MatchListByCount(id string, srv string, count int) []string {
+func MatchList(id string, srv string) []string {
 	var matches []string
-	region := convertRegion(srv)
+	var region string
+	if srv == "NA" || srv == "BR" || srv == "LAN" || srv == "LAS" {
+		region = "americas"
+	}
+	if srv == "KR" || srv == "JP" {
+		region = "asia"
+	}
+	if srv == "EUNE" || srv == "EUW" || srv == "TR" || srv == "RU" {
+		region = "europe"
+	}
+	if srv == "OCE" {
+		region = "sea"
+	}
 
 	client := &http.Client{}
-	request, _ := http.NewRequest("GET", ("https://" + region + ".api.riotgames.com/lol/match/v5/matches/by-puuid/" + id + "/ids?count=" + strconv.Itoa(count)), nil)
+	request, _ := http.NewRequest("GET", ("https://" + region + ".api.riotgames.com/lol/match/v5/matches/by-puuid/" + id + "/ids?count=10"), nil)
 	request.Header.Set("X-Riot-Token", os.Getenv("RIOTKEY"))
 	response, _ := client.Do(request)
 
@@ -137,6 +149,7 @@ func MatchListByCount(id string, srv string, count int) []string {
 			log.Fatalf("error decoding response into []matches] \n%v", err)
 		}
 	}
+
 	return matches
 }
 

@@ -23,9 +23,6 @@ import (
 // @termsOfService There are no terms of service. We accept no responsibility for your ignorance.
 
 // @host api.LoLQueue.com
-
-var DataSource string = "postgresql://" + os.Getenv("PGUSER") + os.Getenv("PGPASS") + "@" + os.Getenv("PGHOST") + ":" + os.Getenv("PGPORT") + "/railway"
-
 type Connect struct {
 	router *mux.Router
 	db     *sql.DB
@@ -38,6 +35,7 @@ func main() {
 	c.MuxInit()
 }
 func (c *Connect) CreatePostgresConnect() {
+	var DataSource string = "postgresql://" + os.Getenv("PGUSER") + os.Getenv("PGPASS") + "@" + os.Getenv("PGHOST") + ":" + os.Getenv("PGPORT") + "/railway"
 
 	db, err := sql.Open("postgres", DataSource)
 	if err != nil {

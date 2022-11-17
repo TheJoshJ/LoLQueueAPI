@@ -23,18 +23,33 @@ type UserLookup struct {
 }
 
 type LookupResponse struct {
-	Username      string            `json:"username"`
-	Tier          string            `json:"tier"`
-	Rank          string            `json:"rank"`
-	Level         int               `json:"level"`
-	ProfileIconId int               `json:"profileIconId"`
-	Champions     []ChampionMastery `json:"champions"`
-	Wins          int               `json:"wins"`
-	Losses        int               `json:"losses"`
+	Username      string                `json:"username"`
+	Tier          string                `json:"tier"`
+	Rank          string                `json:"rank"`
+	Level         int                   `json:"level"`
+	ProfileIconId int                   `json:"profileIconId"`
+	Champions     []ChampionMasteryResp `json:"champions"`
+	Wins          int                   `json:"wins"`
+	Losses        int                   `json:"losses"`
+}
+
+type ChampionMasteryResp struct {
+	ChampionName   string `json:"championName"`
+	ChampionId     int    `json:"championId"`
+	ChampionLevel  int    `json:"championLevel"`
+	ChampionPoints int    `json:"championPoints"`
+}
+
+type MatchDataResp struct {
+	GameID   string `json:"gameID"`
+	GameMode string `json:"gameMode"`
+	Assists  int    `json:"assists"`
+	Deaths   int    `json:"deaths"`
+	Kills    int    `json:"kills"`
+	Win      bool   `json:"win"`
 }
 
 //structs specific to Riot API
-
 type RiotBySummonerName struct {
 	Id            string `json:"id"`
 	AccountId     string `json:"accountId"`

@@ -100,7 +100,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.MatchData"
+                                "$ref": "#/definitions/models.MatchDataResp"
                             }
                         }
                     },
@@ -173,7 +173,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "models.ChampionMastery": {
+        "models.ChampionMasteryResp": {
             "type": "object",
             "properties": {
                 "championId": {
@@ -187,24 +187,6 @@ const docTemplate = `{
                 },
                 "championPoints": {
                     "type": "integer"
-                },
-                "championPointsSinceLastLevel": {
-                    "type": "integer"
-                },
-                "championPointsUntilNextLevel": {
-                    "type": "integer"
-                },
-                "chestGranted": {
-                    "type": "boolean"
-                },
-                "lastPlayTime": {
-                    "type": "integer"
-                },
-                "summonerId": {
-                    "type": "string"
-                },
-                "tokensEarned": {
-                    "type": "integer"
                 }
             }
         },
@@ -214,7 +196,7 @@ const docTemplate = `{
                 "champions": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.ChampionMastery"
+                        "$ref": "#/definitions/models.ChampionMasteryResp"
                     }
                 },
                 "level": {
@@ -240,493 +222,47 @@ const docTemplate = `{
                 }
             }
         },
-        "models.MatchData": {
+        "models.MatchDataResp": {
             "type": "object",
             "properties": {
                 "info": {
                     "type": "object",
                     "properties": {
-                        "gameCreation": {
-                            "type": "integer"
-                        },
-                        "gameDuration": {
-                            "type": "integer"
-                        },
-                        "gameEndTimestamp": {
-                            "type": "integer"
-                        },
-                        "gameId": {
-                            "type": "integer"
-                        },
                         "gameMode": {
                             "type": "string"
-                        },
-                        "gameName": {
-                            "type": "string"
-                        },
-                        "gameStartTimestamp": {
-                            "type": "integer"
-                        },
-                        "gameType": {
-                            "type": "string"
-                        },
-                        "gameVersion": {
-                            "type": "string"
-                        },
-                        "mapId": {
-                            "type": "integer"
                         },
                         "participants": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Participants"
+                                "type": "object",
+                                "properties": {
+                                    "assists": {
+                                        "type": "integer"
+                                    },
+                                    "championName": {
+                                        "type": "string"
+                                    },
+                                    "deaths": {
+                                        "type": "integer"
+                                    },
+                                    "kills": {
+                                        "type": "integer"
+                                    }
+                                }
                             }
-                        },
-                        "platformId": {
-                            "type": "string"
-                        },
-                        "queueId": {
-                            "type": "integer"
                         },
                         "teams": {
                             "type": "array",
                             "items": {
                                 "type": "object",
                                 "properties": {
-                                    "bans": {
-                                        "type": "array",
-                                        "items": {}
-                                    },
-                                    "objectives": {
-                                        "type": "object",
-                                        "properties": {
-                                            "baron": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "first": {
-                                                        "type": "boolean"
-                                                    },
-                                                    "kills": {
-                                                        "type": "integer"
-                                                    }
-                                                }
-                                            },
-                                            "champion": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "first": {
-                                                        "type": "boolean"
-                                                    },
-                                                    "kills": {
-                                                        "type": "integer"
-                                                    }
-                                                }
-                                            },
-                                            "dragon": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "first": {
-                                                        "type": "boolean"
-                                                    },
-                                                    "kills": {
-                                                        "type": "integer"
-                                                    }
-                                                }
-                                            },
-                                            "inhibitor": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "first": {
-                                                        "type": "boolean"
-                                                    },
-                                                    "kills": {
-                                                        "type": "integer"
-                                                    }
-                                                }
-                                            },
-                                            "riftHerald": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "first": {
-                                                        "type": "boolean"
-                                                    },
-                                                    "kills": {
-                                                        "type": "integer"
-                                                    }
-                                                }
-                                            },
-                                            "tower": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "first": {
-                                                        "type": "boolean"
-                                                    },
-                                                    "kills": {
-                                                        "type": "integer"
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    },
-                                    "teamId": {
-                                        "type": "integer"
-                                    },
                                     "win": {
                                         "type": "boolean"
                                     }
                                 }
                             }
-                        },
-                        "tournamentCode": {
-                            "type": "string"
                         }
                     }
-                },
-                "metadata": {
-                    "type": "object",
-                    "properties": {
-                        "dataVersion": {
-                            "type": "string"
-                        },
-                        "matchId": {
-                            "type": "string"
-                        },
-                        "participants": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "models.Participants": {
-            "type": "object",
-            "properties": {
-                "assists": {
-                    "type": "integer"
-                },
-                "baronKills": {
-                    "type": "integer"
-                },
-                "basicPings": {
-                    "type": "integer"
-                },
-                "bountyLevel": {
-                    "type": "integer"
-                },
-                "champExperience": {
-                    "type": "integer"
-                },
-                "champLevel": {
-                    "type": "integer"
-                },
-                "championId": {
-                    "type": "integer"
-                },
-                "championName": {
-                    "type": "string"
-                },
-                "championTransform": {
-                    "type": "integer"
-                },
-                "consumablesPurchased": {
-                    "type": "integer"
-                },
-                "damageDealtToBuildings": {
-                    "type": "integer"
-                },
-                "damageDealtToObjectives": {
-                    "type": "integer"
-                },
-                "damageDealtToTurrets": {
-                    "type": "integer"
-                },
-                "damageSelfMitigated": {
-                    "type": "integer"
-                },
-                "deaths": {
-                    "type": "integer"
-                },
-                "detectorWardsPlaced": {
-                    "type": "integer"
-                },
-                "doubleKills": {
-                    "type": "integer"
-                },
-                "dragonKills": {
-                    "type": "integer"
-                },
-                "eligibleForProgression": {
-                    "type": "boolean"
-                },
-                "firstBloodAssist": {
-                    "type": "boolean"
-                },
-                "firstBloodKill": {
-                    "type": "boolean"
-                },
-                "firstTowerAssist": {
-                    "type": "boolean"
-                },
-                "firstTowerKill": {
-                    "type": "boolean"
-                },
-                "gameEndedInEarlySurrender": {
-                    "type": "boolean"
-                },
-                "gameEndedInSurrender": {
-                    "type": "boolean"
-                },
-                "gameID": {
-                    "type": "string"
-                },
-                "gameMode": {
-                    "type": "string"
-                },
-                "goldEarned": {
-                    "type": "integer"
-                },
-                "goldSpent": {
-                    "type": "integer"
-                },
-                "individualPosition": {
-                    "type": "string"
-                },
-                "inhibitorKills": {
-                    "type": "integer"
-                },
-                "inhibitorTakedowns": {
-                    "type": "integer"
-                },
-                "inhibitorsLost": {
-                    "type": "integer"
-                },
-                "item0": {
-                    "type": "integer"
-                },
-                "item1": {
-                    "type": "integer"
-                },
-                "item2": {
-                    "type": "integer"
-                },
-                "item3": {
-                    "type": "integer"
-                },
-                "item4": {
-                    "type": "integer"
-                },
-                "item5": {
-                    "type": "integer"
-                },
-                "item6": {
-                    "type": "integer"
-                },
-                "itemsPurchased": {
-                    "type": "integer"
-                },
-                "killingSprees": {
-                    "type": "integer"
-                },
-                "kills": {
-                    "type": "integer"
-                },
-                "lane": {
-                    "type": "string"
-                },
-                "largestCriticalStrike": {
-                    "type": "integer"
-                },
-                "largestKillingSpree": {
-                    "type": "integer"
-                },
-                "largestMultiKill": {
-                    "type": "integer"
-                },
-                "longestTimeSpentLiving": {
-                    "type": "integer"
-                },
-                "magicDamageDealt": {
-                    "type": "integer"
-                },
-                "magicDamageDealtToChampions": {
-                    "type": "integer"
-                },
-                "magicDamageTaken": {
-                    "type": "integer"
-                },
-                "neutralMinionsKilled": {
-                    "type": "integer"
-                },
-                "nexusKills": {
-                    "type": "integer"
-                },
-                "nexusLost": {
-                    "type": "integer"
-                },
-                "nexusTakedowns": {
-                    "type": "integer"
-                },
-                "objectivesStolen": {
-                    "type": "integer"
-                },
-                "objectivesStolenAssists": {
-                    "type": "integer"
-                },
-                "participantId": {
-                    "type": "integer"
-                },
-                "pentaKills": {
-                    "type": "integer"
-                },
-                "physicalDamageDealt": {
-                    "type": "integer"
-                },
-                "physicalDamageDealtToChampions": {
-                    "type": "integer"
-                },
-                "physicalDamageTaken": {
-                    "type": "integer"
-                },
-                "profileIcon": {
-                    "type": "integer"
-                },
-                "puuid": {
-                    "type": "string"
-                },
-                "quadraKills": {
-                    "type": "integer"
-                },
-                "riotIdName": {
-                    "type": "string"
-                },
-                "riotIdTagline": {
-                    "type": "string"
-                },
-                "role": {
-                    "type": "string"
-                },
-                "sightWardsBoughtInGame": {
-                    "type": "integer"
-                },
-                "spell1Casts": {
-                    "type": "integer"
-                },
-                "spell2Casts": {
-                    "type": "integer"
-                },
-                "spell3Casts": {
-                    "type": "integer"
-                },
-                "spell4Casts": {
-                    "type": "integer"
-                },
-                "summoner1Casts": {
-                    "type": "integer"
-                },
-                "summoner1Id": {
-                    "type": "integer"
-                },
-                "summoner2Casts": {
-                    "type": "integer"
-                },
-                "summoner2Id": {
-                    "type": "integer"
-                },
-                "summonerId": {
-                    "type": "string"
-                },
-                "summonerLevel": {
-                    "type": "integer"
-                },
-                "summonerName": {
-                    "type": "string"
-                },
-                "teamEarlySurrendered": {
-                    "type": "boolean"
-                },
-                "teamId": {
-                    "type": "integer"
-                },
-                "teamPosition": {
-                    "type": "string"
-                },
-                "timeCCingOthers": {
-                    "type": "integer"
-                },
-                "timePlayed": {
-                    "type": "integer"
-                },
-                "totalDamageDealt": {
-                    "type": "integer"
-                },
-                "totalDamageDealtToChampions": {
-                    "type": "integer"
-                },
-                "totalDamageShieldedOnTeammates": {
-                    "type": "integer"
-                },
-                "totalDamageTaken": {
-                    "type": "integer"
-                },
-                "totalHeal": {
-                    "type": "integer"
-                },
-                "totalHealsOnTeammates": {
-                    "type": "integer"
-                },
-                "totalMinionsKilled": {
-                    "type": "integer"
-                },
-                "totalTimeCCDealt": {
-                    "type": "integer"
-                },
-                "totalTimeSpentDead": {
-                    "type": "integer"
-                },
-                "totalUnitsHealed": {
-                    "type": "integer"
-                },
-                "tripleKills": {
-                    "type": "integer"
-                },
-                "trueDamageDealt": {
-                    "type": "integer"
-                },
-                "trueDamageDealtToChampions": {
-                    "type": "integer"
-                },
-                "trueDamageTaken": {
-                    "type": "integer"
-                },
-                "turretKills": {
-                    "type": "integer"
-                },
-                "turretTakedowns": {
-                    "type": "integer"
-                },
-                "turretsLost": {
-                    "type": "integer"
-                },
-                "unrealKills": {
-                    "type": "integer"
-                },
-                "visionScore": {
-                    "type": "integer"
-                },
-                "visionWardsBoughtInGame": {
-                    "type": "integer"
-                },
-                "wardsKilled": {
-                    "type": "integer"
-                },
-                "wardsPlaced": {
-                    "type": "integer"
-                },
-                "win": {
-                    "type": "boolean"
                 }
             }
         },
