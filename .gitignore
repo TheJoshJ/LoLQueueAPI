@@ -2,8 +2,8 @@
 _obj
 _test
 
-.env
+*.env
 
 # Editor Settings
-.idea
-.vscode
+*.idea
+*.vscode
