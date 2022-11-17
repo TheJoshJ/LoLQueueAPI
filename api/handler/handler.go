@@ -132,8 +132,6 @@ func GetRecentMatches(w http.ResponseWriter, r *http.Request) {
 		for _, participant := range mdata.Info.Participants {
 			if participant.Puuid == bySummonerName.Puuid {
 				matchDataReturn[i] = participant
-				log.Println(i)
-				log.Println(matchDataReturn[i])
 			}
 			matchDataResp[i].GameID = matchesData[i].Metadata.MatchId
 			matchDataResp[i].GameMode = matchesData[i].Info.GameMode
@@ -176,7 +174,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	//create a new instance of a struct for us to process
 	var newUser models.UserPost
-	err := json.NewDecoder(r.Body).Decode(newUser)
+	err := json.NewDecoder(r.Body).Decode(&newUser)
 	if err != nil {
 		log.Printf("error decoding user post resposne\n %s", err)
 		w.WriteHeader(http.StatusInternalServerError)

@@ -81,7 +81,7 @@ func (c *Connect) MuxInit() {
 
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, os.Interrupt)
-	log.Println("Press Ctrl+C to exit")
+	log.Println("Service is running!")
 	<-ch
 
 	ctx, cancel := context.WithTimeout(context.Background(), wait)

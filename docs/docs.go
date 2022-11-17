@@ -225,44 +225,26 @@ const docTemplate = `{
         "models.MatchDataResp": {
             "type": "object",
             "properties": {
-                "info": {
-                    "type": "object",
-                    "properties": {
-                        "gameMode": {
-                            "type": "string"
-                        },
-                        "participants": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "assists": {
-                                        "type": "integer"
-                                    },
-                                    "championName": {
-                                        "type": "string"
-                                    },
-                                    "deaths": {
-                                        "type": "integer"
-                                    },
-                                    "kills": {
-                                        "type": "integer"
-                                    }
-                                }
-                            }
-                        },
-                        "teams": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "win": {
-                                        "type": "boolean"
-                                    }
-                                }
-                            }
-                        }
-                    }
+                "assists": {
+                    "type": "integer"
+                },
+                "championName": {
+                    "type": "string"
+                },
+                "deaths": {
+                    "type": "integer"
+                },
+                "gameID": {
+                    "type": "string"
+                },
+                "gameMode": {
+                    "type": "string"
+                },
+                "kills": {
+                    "type": "integer"
+                },
+                "win": {
+                    "type": "boolean"
                 }
             }
         },

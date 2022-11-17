@@ -33,31 +33,20 @@ definitions:
     type: object
   models.MatchDataResp:
     properties:
-      info:
-        properties:
-          gameMode:
-            type: string
-          participants:
-            items:
-              properties:
-                assists:
-                  type: integer
-                championName:
-                  type: string
-                deaths:
-                  type: integer
-                kills:
-                  type: integer
-              type: object
-            type: array
-          teams:
-            items:
-              properties:
-                win:
-                  type: boolean
-              type: object
-            type: array
-        type: object
+      assists:
+        type: integer
+      championName:
+        type: string
+      deaths:
+        type: integer
+      gameID:
+        type: string
+      gameMode:
+        type: string
+      kills:
+        type: integer
+      win:
+        type: boolean
     type: object
   models.UserDB:
     properties:
