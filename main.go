@@ -108,7 +108,7 @@ func (c *Connect) AddRoutes() {
 
 	c.router.HandleFunc("/ping", api.Ping).Methods("GET")
 	c.router.HandleFunc("/lookup/{srv}/{usr}", api.ProfileLookup).Methods("GET")
-	c.router.HandleFunc("/match/{srv}/{usr}", api.MatchGet).Methods("GET")
+	c.router.HandleFunc("/match/{srv}/{usr}", api.GetRecentMatches).Methods("GET")
 
 	//c.router.HandleFunc("/user/{id}", api.ViewUser).Methods("GET")
 	c.router.HandleFunc("/user", api.CreateUser).Methods("POST")

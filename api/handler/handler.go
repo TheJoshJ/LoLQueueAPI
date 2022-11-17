@@ -12,10 +12,9 @@ import (
 // Ping godoc
 // @Summary      Pings the API service to ensure that it is active
 // @Description  Ping the API service
-// @Tags         v1
+// @Tags         utility
 // @Accept       json
 // @Produce      json
-// @Param        id   path      int  true  "Account ID"
 // @Success      200
 // @Failure      404
 // @Router       /ping [get]
@@ -30,13 +29,13 @@ func Ping(w http.ResponseWriter, r *http.Request) {
 
 // ProfileLookup godoc
 // @Summary      Show an account
-// @Description  Get's the users account information by their Username and Server
+// @Description  Gets the users account information by their Username and Server
 // @Tags         accounts
 // @Accept       json
 // @Produce      json
 // @Param        srv   path      string  true  "Riot Server"
 // @Param        usr   path      string  true  "Username"
-// @Success      200  {object}  models.LookupResponse
+// @Success      200   {object}  models.LookupResponse
 // @Failure      400
 // @Failure      404
 // @Failure      500
@@ -89,7 +88,20 @@ func ProfileLookup(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func MatchGet(w http.ResponseWriter, r *http.Request) {
+// GetRecentMatches godoc
+// @Summary      Show recent matches
+// @Description  Show the past 10 matches
+// @Tags         accounts
+// @Accept       json
+// @Produce      json
+// @Param        srv   path      string  true  "Riot Server"
+// @Param        usr   path      string  true  "Username"
+// @Success      200  {array}    models.MatchData
+// @Failure      400
+// @Failure      404
+// @Failure      500
+// @Router       /match/{srv}/{usr} [get]
+func GetRecentMatches(w http.ResponseWriter, r *http.Request) {
 	var matchList []string
 	matchData := make([]models.MatchData, 10)
 
@@ -130,17 +142,28 @@ func MatchGet(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// CreateUser godoc
+// @Summary      Create an account
+// @Description  Creates and stores the users data to be used when executing commands/api calls.
+// @Tags         accounts
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}   models.UserDB
+// @Failure      400
+// @Failure      404
+// @Failure      500
+// @Router       /user [post]
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
 	//create a new instance of a struct for us to process
 	var newUser models.UserPost
-
-	//process the information sent via the PostForm request
-	newUser.Discordid = r.FormValue("discordid")
-	newUser.Username = r.FormValue("username")
-	newUser.Server = r.FormValue("server")
+	err := json.NewDecoder(r.Body).Decode(newUser)
+	if err != nil {
+		log.Printf("error decoding user post resposne\n %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 
 	if newUser.Discordid == "" || newUser.Username == "" || newUser.Server == "" {
 		w.WriteHeader(http.StatusBadRequest)

@@ -43,6 +43,344 @@ definitions:
       wins:
         type: integer
     type: object
+  models.MatchData:
+    properties:
+      info:
+        properties:
+          gameCreation:
+            type: integer
+          gameDuration:
+            type: integer
+          gameEndTimestamp:
+            type: integer
+          gameId:
+            type: integer
+          gameMode:
+            type: string
+          gameName:
+            type: string
+          gameStartTimestamp:
+            type: integer
+          gameType:
+            type: string
+          gameVersion:
+            type: string
+          mapId:
+            type: integer
+          participants:
+            items:
+              $ref: '#/definitions/models.Participants'
+            type: array
+          platformId:
+            type: string
+          queueId:
+            type: integer
+          teams:
+            items:
+              properties:
+                bans:
+                  items: {}
+                  type: array
+                objectives:
+                  properties:
+                    baron:
+                      properties:
+                        first:
+                          type: boolean
+                        kills:
+                          type: integer
+                      type: object
+                    champion:
+                      properties:
+                        first:
+                          type: boolean
+                        kills:
+                          type: integer
+                      type: object
+                    dragon:
+                      properties:
+                        first:
+                          type: boolean
+                        kills:
+                          type: integer
+                      type: object
+                    inhibitor:
+                      properties:
+                        first:
+                          type: boolean
+                        kills:
+                          type: integer
+                      type: object
+                    riftHerald:
+                      properties:
+                        first:
+                          type: boolean
+                        kills:
+                          type: integer
+                      type: object
+                    tower:
+                      properties:
+                        first:
+                          type: boolean
+                        kills:
+                          type: integer
+                      type: object
+                  type: object
+                teamId:
+                  type: integer
+                win:
+                  type: boolean
+              type: object
+            type: array
+          tournamentCode:
+            type: string
+        type: object
+      metadata:
+        properties:
+          dataVersion:
+            type: string
+          matchId:
+            type: string
+          participants:
+            items:
+              type: string
+            type: array
+        type: object
+    type: object
+  models.Participants:
+    properties:
+      assists:
+        type: integer
+      baronKills:
+        type: integer
+      basicPings:
+        type: integer
+      bountyLevel:
+        type: integer
+      champExperience:
+        type: integer
+      champLevel:
+        type: integer
+      championId:
+        type: integer
+      championName:
+        type: string
+      championTransform:
+        type: integer
+      consumablesPurchased:
+        type: integer
+      damageDealtToBuildings:
+        type: integer
+      damageDealtToObjectives:
+        type: integer
+      damageDealtToTurrets:
+        type: integer
+      damageSelfMitigated:
+        type: integer
+      deaths:
+        type: integer
+      detectorWardsPlaced:
+        type: integer
+      doubleKills:
+        type: integer
+      dragonKills:
+        type: integer
+      eligibleForProgression:
+        type: boolean
+      firstBloodAssist:
+        type: boolean
+      firstBloodKill:
+        type: boolean
+      firstTowerAssist:
+        type: boolean
+      firstTowerKill:
+        type: boolean
+      gameEndedInEarlySurrender:
+        type: boolean
+      gameEndedInSurrender:
+        type: boolean
+      gameID:
+        type: string
+      gameMode:
+        type: string
+      goldEarned:
+        type: integer
+      goldSpent:
+        type: integer
+      individualPosition:
+        type: string
+      inhibitorKills:
+        type: integer
+      inhibitorTakedowns:
+        type: integer
+      inhibitorsLost:
+        type: integer
+      item0:
+        type: integer
+      item1:
+        type: integer
+      item2:
+        type: integer
+      item3:
+        type: integer
+      item4:
+        type: integer
+      item5:
+        type: integer
+      item6:
+        type: integer
+      itemsPurchased:
+        type: integer
+      killingSprees:
+        type: integer
+      kills:
+        type: integer
+      lane:
+        type: string
+      largestCriticalStrike:
+        type: integer
+      largestKillingSpree:
+        type: integer
+      largestMultiKill:
+        type: integer
+      longestTimeSpentLiving:
+        type: integer
+      magicDamageDealt:
+        type: integer
+      magicDamageDealtToChampions:
+        type: integer
+      magicDamageTaken:
+        type: integer
+      neutralMinionsKilled:
+        type: integer
+      nexusKills:
+        type: integer
+      nexusLost:
+        type: integer
+      nexusTakedowns:
+        type: integer
+      objectivesStolen:
+        type: integer
+      objectivesStolenAssists:
+        type: integer
+      participantId:
+        type: integer
+      pentaKills:
+        type: integer
+      physicalDamageDealt:
+        type: integer
+      physicalDamageDealtToChampions:
+        type: integer
+      physicalDamageTaken:
+        type: integer
+      profileIcon:
+        type: integer
+      puuid:
+        type: string
+      quadraKills:
+        type: integer
+      riotIdName:
+        type: string
+      riotIdTagline:
+        type: string
+      role:
+        type: string
+      sightWardsBoughtInGame:
+        type: integer
+      spell1Casts:
+        type: integer
+      spell2Casts:
+        type: integer
+      spell3Casts:
+        type: integer
+      spell4Casts:
+        type: integer
+      summoner1Casts:
+        type: integer
+      summoner1Id:
+        type: integer
+      summoner2Casts:
+        type: integer
+      summoner2Id:
+        type: integer
+      summonerId:
+        type: string
+      summonerLevel:
+        type: integer
+      summonerName:
+        type: string
+      teamEarlySurrendered:
+        type: boolean
+      teamId:
+        type: integer
+      teamPosition:
+        type: string
+      timeCCingOthers:
+        type: integer
+      timePlayed:
+        type: integer
+      totalDamageDealt:
+        type: integer
+      totalDamageDealtToChampions:
+        type: integer
+      totalDamageShieldedOnTeammates:
+        type: integer
+      totalDamageTaken:
+        type: integer
+      totalHeal:
+        type: integer
+      totalHealsOnTeammates:
+        type: integer
+      totalMinionsKilled:
+        type: integer
+      totalTimeCCDealt:
+        type: integer
+      totalTimeSpentDead:
+        type: integer
+      totalUnitsHealed:
+        type: integer
+      tripleKills:
+        type: integer
+      trueDamageDealt:
+        type: integer
+      trueDamageDealtToChampions:
+        type: integer
+      trueDamageTaken:
+        type: integer
+      turretKills:
+        type: integer
+      turretTakedowns:
+        type: integer
+      turretsLost:
+        type: integer
+      unrealKills:
+        type: integer
+      visionScore:
+        type: integer
+      visionWardsBoughtInGame:
+        type: integer
+      wardsKilled:
+        type: integer
+      wardsPlaced:
+        type: integer
+      win:
+        type: boolean
+    type: object
+  models.UserDB:
+    properties:
+      RankedTier:
+        type: string
+      discordid:
+        type: string
+      id:
+        type: string
+      puuid:
+        type: string
+      server:
+        type: string
+      username:
+        type: string
+    type: object
 host: api.LoLQueue.com
 info:
   contact: {}
@@ -56,7 +394,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get's the users account information by their Username and Server
+      description: Gets the users account information by their Username and Server
       parameters:
       - description: Riot Server
         in: path
@@ -84,17 +422,45 @@ paths:
       summary: Show an account
       tags:
       - accounts
+  /match/{srv}/{usr}:
+    get:
+      consumes:
+      - application/json
+      description: Show the past 10 matches
+      parameters:
+      - description: Riot Server
+        in: path
+        name: srv
+        required: true
+        type: string
+      - description: Username
+        in: path
+        name: usr
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.MatchData'
+            type: array
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Show recent matches
+      tags:
+      - accounts
   /ping:
     get:
       consumes:
       - application/json
       description: Ping the API service
-      parameters:
-      - description: Account ID
-        in: path
-        name: id
-        required: true
-        type: integer
       produces:
       - application/json
       responses:
@@ -104,5 +470,27 @@ paths:
           description: Not Found
       summary: Pings the API service to ensure that it is active
       tags:
-      - v1
+      - utility
+  /user:
+    post:
+      consumes:
+      - application/json
+      description: Creates and stores the users data to be used when executing commands/api
+        calls.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserDB'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Create an account
+      tags:
+      - accounts
 swagger: "2.0"

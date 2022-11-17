@@ -11,7 +11,7 @@
     "paths": {
         "/lookup/{srv}/{usr}": {
             "get": {
-                "description": "Get's the users account information by their Username and Server",
+                "description": "Gets the users account information by their Username and Server",
                 "consumes": [
                     "application/json"
                 ],
@@ -57,6 +57,57 @@
                 }
             }
         },
+        "/match/{srv}/{usr}": {
+            "get": {
+                "description": "Show the past 10 matches",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "Show recent matches",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Riot Server",
+                        "name": "srv",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Username",
+                        "name": "usr",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.MatchData"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/ping": {
             "get": {
                 "description": "Ping the API service",
@@ -67,24 +118,47 @@
                     "application/json"
                 ],
                 "tags": [
-                    "v1"
+                    "utility"
                 ],
                 "summary": "Pings the API service to ensure that it is active",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Account ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK"
                     },
                     "404": {
                         "description": "Not Found"
+                    }
+                }
+            }
+        },
+        "/user": {
+            "post": {
+                "description": "Creates and stores the users data to be used when executing commands/api calls.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "Create an account",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserDB"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
                     }
                 }
             }
@@ -155,6 +229,519 @@
                 },
                 "wins": {
                     "type": "integer"
+                }
+            }
+        },
+        "models.MatchData": {
+            "type": "object",
+            "properties": {
+                "info": {
+                    "type": "object",
+                    "properties": {
+                        "gameCreation": {
+                            "type": "integer"
+                        },
+                        "gameDuration": {
+                            "type": "integer"
+                        },
+                        "gameEndTimestamp": {
+                            "type": "integer"
+                        },
+                        "gameId": {
+                            "type": "integer"
+                        },
+                        "gameMode": {
+                            "type": "string"
+                        },
+                        "gameName": {
+                            "type": "string"
+                        },
+                        "gameStartTimestamp": {
+                            "type": "integer"
+                        },
+                        "gameType": {
+                            "type": "string"
+                        },
+                        "gameVersion": {
+                            "type": "string"
+                        },
+                        "mapId": {
+                            "type": "integer"
+                        },
+                        "participants": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Participants"
+                            }
+                        },
+                        "platformId": {
+                            "type": "string"
+                        },
+                        "queueId": {
+                            "type": "integer"
+                        },
+                        "teams": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "bans": {
+                                        "type": "array",
+                                        "items": {}
+                                    },
+                                    "objectives": {
+                                        "type": "object",
+                                        "properties": {
+                                            "baron": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "first": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "kills": {
+                                                        "type": "integer"
+                                                    }
+                                                }
+                                            },
+                                            "champion": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "first": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "kills": {
+                                                        "type": "integer"
+                                                    }
+                                                }
+                                            },
+                                            "dragon": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "first": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "kills": {
+                                                        "type": "integer"
+                                                    }
+                                                }
+                                            },
+                                            "inhibitor": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "first": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "kills": {
+                                                        "type": "integer"
+                                                    }
+                                                }
+                                            },
+                                            "riftHerald": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "first": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "kills": {
+                                                        "type": "integer"
+                                                    }
+                                                }
+                                            },
+                                            "tower": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "first": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "kills": {
+                                                        "type": "integer"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "teamId": {
+                                        "type": "integer"
+                                    },
+                                    "win": {
+                                        "type": "boolean"
+                                    }
+                                }
+                            }
+                        },
+                        "tournamentCode": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "metadata": {
+                    "type": "object",
+                    "properties": {
+                        "dataVersion": {
+                            "type": "string"
+                        },
+                        "matchId": {
+                            "type": "string"
+                        },
+                        "participants": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "models.Participants": {
+            "type": "object",
+            "properties": {
+                "assists": {
+                    "type": "integer"
+                },
+                "baronKills": {
+                    "type": "integer"
+                },
+                "basicPings": {
+                    "type": "integer"
+                },
+                "bountyLevel": {
+                    "type": "integer"
+                },
+                "champExperience": {
+                    "type": "integer"
+                },
+                "champLevel": {
+                    "type": "integer"
+                },
+                "championId": {
+                    "type": "integer"
+                },
+                "championName": {
+                    "type": "string"
+                },
+                "championTransform": {
+                    "type": "integer"
+                },
+                "consumablesPurchased": {
+                    "type": "integer"
+                },
+                "damageDealtToBuildings": {
+                    "type": "integer"
+                },
+                "damageDealtToObjectives": {
+                    "type": "integer"
+                },
+                "damageDealtToTurrets": {
+                    "type": "integer"
+                },
+                "damageSelfMitigated": {
+                    "type": "integer"
+                },
+                "deaths": {
+                    "type": "integer"
+                },
+                "detectorWardsPlaced": {
+                    "type": "integer"
+                },
+                "doubleKills": {
+                    "type": "integer"
+                },
+                "dragonKills": {
+                    "type": "integer"
+                },
+                "eligibleForProgression": {
+                    "type": "boolean"
+                },
+                "firstBloodAssist": {
+                    "type": "boolean"
+                },
+                "firstBloodKill": {
+                    "type": "boolean"
+                },
+                "firstTowerAssist": {
+                    "type": "boolean"
+                },
+                "firstTowerKill": {
+                    "type": "boolean"
+                },
+                "gameEndedInEarlySurrender": {
+                    "type": "boolean"
+                },
+                "gameEndedInSurrender": {
+                    "type": "boolean"
+                },
+                "gameID": {
+                    "type": "string"
+                },
+                "gameMode": {
+                    "type": "string"
+                },
+                "goldEarned": {
+                    "type": "integer"
+                },
+                "goldSpent": {
+                    "type": "integer"
+                },
+                "individualPosition": {
+                    "type": "string"
+                },
+                "inhibitorKills": {
+                    "type": "integer"
+                },
+                "inhibitorTakedowns": {
+                    "type": "integer"
+                },
+                "inhibitorsLost": {
+                    "type": "integer"
+                },
+                "item0": {
+                    "type": "integer"
+                },
+                "item1": {
+                    "type": "integer"
+                },
+                "item2": {
+                    "type": "integer"
+                },
+                "item3": {
+                    "type": "integer"
+                },
+                "item4": {
+                    "type": "integer"
+                },
+                "item5": {
+                    "type": "integer"
+                },
+                "item6": {
+                    "type": "integer"
+                },
+                "itemsPurchased": {
+                    "type": "integer"
+                },
+                "killingSprees": {
+                    "type": "integer"
+                },
+                "kills": {
+                    "type": "integer"
+                },
+                "lane": {
+                    "type": "string"
+                },
+                "largestCriticalStrike": {
+                    "type": "integer"
+                },
+                "largestKillingSpree": {
+                    "type": "integer"
+                },
+                "largestMultiKill": {
+                    "type": "integer"
+                },
+                "longestTimeSpentLiving": {
+                    "type": "integer"
+                },
+                "magicDamageDealt": {
+                    "type": "integer"
+                },
+                "magicDamageDealtToChampions": {
+                    "type": "integer"
+                },
+                "magicDamageTaken": {
+                    "type": "integer"
+                },
+                "neutralMinionsKilled": {
+                    "type": "integer"
+                },
+                "nexusKills": {
+                    "type": "integer"
+                },
+                "nexusLost": {
+                    "type": "integer"
+                },
+                "nexusTakedowns": {
+                    "type": "integer"
+                },
+                "objectivesStolen": {
+                    "type": "integer"
+                },
+                "objectivesStolenAssists": {
+                    "type": "integer"
+                },
+                "participantId": {
+                    "type": "integer"
+                },
+                "pentaKills": {
+                    "type": "integer"
+                },
+                "physicalDamageDealt": {
+                    "type": "integer"
+                },
+                "physicalDamageDealtToChampions": {
+                    "type": "integer"
+                },
+                "physicalDamageTaken": {
+                    "type": "integer"
+                },
+                "profileIcon": {
+                    "type": "integer"
+                },
+                "puuid": {
+                    "type": "string"
+                },
+                "quadraKills": {
+                    "type": "integer"
+                },
+                "riotIdName": {
+                    "type": "string"
+                },
+                "riotIdTagline": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "sightWardsBoughtInGame": {
+                    "type": "integer"
+                },
+                "spell1Casts": {
+                    "type": "integer"
+                },
+                "spell2Casts": {
+                    "type": "integer"
+                },
+                "spell3Casts": {
+                    "type": "integer"
+                },
+                "spell4Casts": {
+                    "type": "integer"
+                },
+                "summoner1Casts": {
+                    "type": "integer"
+                },
+                "summoner1Id": {
+                    "type": "integer"
+                },
+                "summoner2Casts": {
+                    "type": "integer"
+                },
+                "summoner2Id": {
+                    "type": "integer"
+                },
+                "summonerId": {
+                    "type": "string"
+                },
+                "summonerLevel": {
+                    "type": "integer"
+                },
+                "summonerName": {
+                    "type": "string"
+                },
+                "teamEarlySurrendered": {
+                    "type": "boolean"
+                },
+                "teamId": {
+                    "type": "integer"
+                },
+                "teamPosition": {
+                    "type": "string"
+                },
+                "timeCCingOthers": {
+                    "type": "integer"
+                },
+                "timePlayed": {
+                    "type": "integer"
+                },
+                "totalDamageDealt": {
+                    "type": "integer"
+                },
+                "totalDamageDealtToChampions": {
+                    "type": "integer"
+                },
+                "totalDamageShieldedOnTeammates": {
+                    "type": "integer"
+                },
+                "totalDamageTaken": {
+                    "type": "integer"
+                },
+                "totalHeal": {
+                    "type": "integer"
+                },
+                "totalHealsOnTeammates": {
+                    "type": "integer"
+                },
+                "totalMinionsKilled": {
+                    "type": "integer"
+                },
+                "totalTimeCCDealt": {
+                    "type": "integer"
+                },
+                "totalTimeSpentDead": {
+                    "type": "integer"
+                },
+                "totalUnitsHealed": {
+                    "type": "integer"
+                },
+                "tripleKills": {
+                    "type": "integer"
+                },
+                "trueDamageDealt": {
+                    "type": "integer"
+                },
+                "trueDamageDealtToChampions": {
+                    "type": "integer"
+                },
+                "trueDamageTaken": {
+                    "type": "integer"
+                },
+                "turretKills": {
+                    "type": "integer"
+                },
+                "turretTakedowns": {
+                    "type": "integer"
+                },
+                "turretsLost": {
+                    "type": "integer"
+                },
+                "unrealKills": {
+                    "type": "integer"
+                },
+                "visionScore": {
+                    "type": "integer"
+                },
+                "visionWardsBoughtInGame": {
+                    "type": "integer"
+                },
+                "wardsKilled": {
+                    "type": "integer"
+                },
+                "wardsPlaced": {
+                    "type": "integer"
+                },
+                "win": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.UserDB": {
+            "type": "object",
+            "properties": {
+                "RankedTier": {
+                    "type": "string"
+                },
+                "discordid": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "puuid": {
+                    "type": "string"
+                },
+                "server": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         }
