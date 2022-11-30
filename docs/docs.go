@@ -17,6 +17,38 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/leaderboard": {
+            "get": {
+                "description": "Get the leaderboards for a specifc discord server ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "Get leaderboard data",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Leaderboard"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/lookup/{srv}/{usr}": {
             "get": {
                 "description": "Gets the users account information by their Username and Server",
@@ -194,6 +226,40 @@ const docTemplate = `{
                 },
                 "championPoints": {
                     "type": "integer"
+                }
+            }
+        },
+        "models.Leaderboard": {
+            "type": "object",
+            "properties": {
+                "current_objective": {
+                    "type": "string"
+                },
+                "discord_server_id": {
+                    "type": "string"
+                },
+                "leaders": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Leaders"
+                    }
+                },
+                "sec_till_next_obj": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.Leaders": {
+            "type": "object",
+            "properties": {
+                "position": {
+                    "type": "integer"
+                },
+                "score": {
+                    "type": "string"
+                },
+                "summoner_name": {
+                    "type": "string"
                 }
             }
         },

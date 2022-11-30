@@ -1,7 +1,5 @@
 package models
 
-import "time"
-
 //structs specific to LoLQueue API
 
 type UserPost struct {
@@ -53,10 +51,10 @@ type MatchDataResp struct {
 }
 
 type Leaderboard struct {
-	DiscordServerID  string        `json:"discord_server_id"`
-	CurrentObjective string        `json:"current_objective"`
-	SecTillNextObj   time.Duration `json:"sec_till_next_obj"`
-	Leaders          []Leaders     `json:"leaders"`
+	DiscordServerID  string    `json:"discord_server_id"`
+	CurrentObjective string    `json:"current_objective"`
+	SecTillNextObj   int       `json:"sec_till_next_obj"`
+	Leaders          []Leaders `json:"leaders"`
 }
 type Leaders struct {
 	SummonerName string `json:"summoner_name"`

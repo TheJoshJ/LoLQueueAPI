@@ -10,6 +10,28 @@ definitions:
       championPoints:
         type: integer
     type: object
+  models.Leaderboard:
+    properties:
+      current_objective:
+        type: string
+      discord_server_id:
+        type: string
+      leaders:
+        items:
+          $ref: '#/definitions/models.Leaders'
+        type: array
+      sec_till_next_obj:
+        type: integer
+    type: object
+  models.Leaders:
+    properties:
+      position:
+        type: integer
+      score:
+        type: string
+      summoner_name:
+        type: string
+    type: object
   models.LookupResponse:
     properties:
       champions:
@@ -72,6 +94,27 @@ info:
   title: LoLQueue API
   version: "1.0"
 paths:
+  /leaderboard:
+    get:
+      consumes:
+      - application/json
+      description: Get the leaderboards for a specifc discord server ID
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Leaderboard'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Get leaderboard data
+      tags:
+      - accounts
   /lookup/{srv}/{usr}:
     get:
       consumes:

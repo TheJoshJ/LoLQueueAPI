@@ -242,8 +242,8 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetLeaderboard godoc
-// @Summary      Create an account
-// @Description  Creates and stores the users data to be used when executing commands/api calls.
+// @Summary      Get leaderboard data
+// @Description  Get the leaderboards for a specifc discord server ID
 // @Tags         accounts
 // @Accept       json
 // @Produce      json
@@ -251,7 +251,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 // @Failure      400
 // @Failure      404
 // @Failure      500
-// @Router       /leaderbaord [get]
+// @Router       /leaderboard [get]
 func GetLeaderboard(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
