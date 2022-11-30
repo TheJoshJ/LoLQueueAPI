@@ -7,6 +7,8 @@ import (
 	"main/api/riot_api"
 	"main/models"
 	"net/http"
+	"os"
+	"strconv"
 )
 
 // Ping godoc
@@ -96,16 +98,29 @@ func ProfileLookup(w http.ResponseWriter, r *http.Request) {
 // @Produce      json
 // @Param        srv   path      string  true  "Riot Server"
 // @Param        usr   path      string  true  "Username"
+// @Param        usr   query      string  true  "count"
 // @Success      200  {array}    models.MatchDataResp
 // @Failure      400
 // @Failure      404
 // @Failure      500
 // @Router       /match/{srv}/{usr} [get]
 func GetRecentMatches(w http.ResponseWriter, r *http.Request) {
+
+	limit := r.URL.Query().Get("count")
+	if limit == "" {
+		// id.asc is the default sort query
+		limit = "20"
+	}
+
+	limitInt, _ := strconv.Atoi(limit)
+	if limitInt > 50 {
+		limitInt = 20
+	}
+
 	var matchList []string
-	matchesData := make([]models.MatchData, 10)
-	matchDataReturn := make([]models.Participants, 10)
-	matchDataResp := make([]models.MatchDataResp, 10)
+	matchesData := make([]models.MatchData, limitInt)
+	matchDataReturn := make([]models.Participants, limitInt)
+	matchDataResp := make([]models.MatchDataResp, limitInt)
 
 	w.Header().Set("Content-Type", "application/json")
 
@@ -122,7 +137,7 @@ func GetRecentMatches(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	bySummonerName := riot_api.GetBySummonerName(userSearch.Username, userSearch.Server)
-	matchList = riot_api.MatchList(bySummonerName.Puuid, userSearch.Server)
+	matchList = riot_api.MatchList(bySummonerName.Puuid, userSearch.Server, limitInt)
 
 	for i, matchid := range matchList {
 		matchesData[i] = riot_api.MatchInfo(matchid, userSearch.Server)
@@ -220,6 +235,33 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_, err = w.Write(reply)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+// GetLeaderboard godoc
+// @Summary      Create an account
+// @Description  Creates and stores the users data to be used when executing commands/api calls.
+// @Tags         accounts
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}   models.Leaderboard
+// @Failure      400
+// @Failure      404
+// @Failure      500
+// @Router       /leaderbaord [get]
+func GetLeaderboard(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	data, err := os.ReadFile("./models/MOCK_LEADERBOARD.json")
+	if err != nil {
+		log.Fatalf("Failed to read products list - %s.", err)
+		return
+	}
+
+	_, err = w.Write(data)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

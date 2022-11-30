@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 //structs specific to LoLQueue API
 
 type UserPost struct {
@@ -48,6 +50,18 @@ type MatchDataResp struct {
 	Deaths       int    `json:"deaths"`
 	Kills        int    `json:"kills"`
 	Win          bool   `json:"win"`
+}
+
+type Leaderboard struct {
+	DiscordServerID  string        `json:"discord_server_id"`
+	CurrentObjective string        `json:"current_objective"`
+	SecTillNextObj   time.Duration `json:"sec_till_next_obj"`
+	Leaders          []Leaders     `json:"leaders"`
+}
+type Leaders struct {
+	SummonerName string `json:"summoner_name"`
+	Position     int    `json:"position"`
+	Score        string `json:"score"`
 }
 
 //structs specific to Riot API

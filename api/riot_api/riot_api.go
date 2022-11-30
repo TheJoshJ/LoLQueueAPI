@@ -122,7 +122,7 @@ func MatchInfo(matchid string, srv string) models.MatchData {
 	return match
 }
 
-func MatchList(id string, srv string) []string {
+func MatchList(id string, srv string, limit int) []string {
 	var matches []string
 	var region string
 	if srv == "NA" || srv == "BR" || srv == "LAN" || srv == "LAS" {
@@ -138,8 +138,9 @@ func MatchList(id string, srv string) []string {
 		region = "sea"
 	}
 
+	count := strconv.Itoa(limit)
 	client := &http.Client{}
-	request, _ := http.NewRequest("GET", ("https://" + region + ".api.riotgames.com/lol/match/v5/matches/by-puuid/" + id + "/ids?count=10"), nil)
+	request, _ := http.NewRequest("GET", ("https://" + region + ".api.riotgames.com/lol/match/v5/matches/by-puuid/" + id + "/ids?count=" + count), nil)
 	request.Header.Set("X-Riot-Token", os.Getenv("RIOTKEY"))
 	response, _ := client.Do(request)
 

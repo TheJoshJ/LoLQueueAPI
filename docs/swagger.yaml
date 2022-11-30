@@ -120,6 +120,11 @@ paths:
         name: usr
         required: true
         type: string
+      - description: count
+        in: query
+        name: usr
+        required: true
+        type: string
       produces:
       - application/json
       responses:

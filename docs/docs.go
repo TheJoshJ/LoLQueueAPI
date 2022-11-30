@@ -92,6 +92,13 @@ const docTemplate = `{
                         "name": "usr",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "count",
+                        "name": "usr",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
