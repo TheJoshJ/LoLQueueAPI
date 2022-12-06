@@ -3,18 +3,20 @@ package models
 //structs specific to LoLQueue API
 
 type UserPost struct {
-	Username  string `json:"username"`
-	Server    string `json:"server"`
-	Discordid string `json:"discordid"`
+	Username        string `json:"username"`
+	RiotServer      string `json:"riotServer"`
+	DiscordID       string `json:"discordID"`
+	DiscordServerID string `json:"discordServerID"`
 }
 
 type UserDB struct {
-	Discordid  string `json:"discordid"`
-	Username   string `json:"username"`
-	Server     string `json:"server"`
-	Puuid      string `json:"puuid"`
-	Id         string `json:"id"`
-	RankedTier string `json:"RankedTier"`
+	Discordid       string `json:"discordID"`
+	DiscordServerID string `json:"discordServerID"`
+	Username        string `json:"username"`
+	Server          string `json:"server"`
+	Puuid           string `json:"puuid"`
+	Id              string `json:"id"`
+	RankedTier      string `json:"RankedTier"`
 }
 
 type UserLookup struct {
@@ -51,18 +53,19 @@ type MatchDataResp struct {
 }
 
 type Leaderboard struct {
-	DiscordServerID  string    `json:"discord_server_id"`
-	CurrentObjective string    `json:"current_objective"`
-	SecTillNextObj   int       `json:"sec_till_next_obj"`
+	DiscordServerID  string    `json:"discordServerID"`
+	CurrentObjective string    `json:"currentObjective"`
+	SecTillNextObj   int       `json:"secTillNextObj"`
 	Leaders          []Leaders `json:"leaders"`
 }
 type Leaders struct {
-	SummonerName string `json:"summoner_name"`
+	SummonerName string `json:"summonerName"`
 	Position     int    `json:"position"`
 	Score        string `json:"score"`
 }
 
 //structs specific to Riot API
+
 type RiotBySummonerName struct {
 	Id            string `json:"id"`
 	AccountId     string `json:"accountId"`

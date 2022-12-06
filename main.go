@@ -2,18 +2,22 @@ package main
 
 import (
 	"context"
-	"database/sql"
+	"encoding/json"
 	"flag"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	httpSwagger "github.com/swaggo/http-swagger"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"log"
-	"main/api/handler"
+	api "main/api/handler"
 	_ "main/docs"
+	"main/models"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"time"
 )
 
@@ -23,34 +27,29 @@ import (
 // @termsOfService There are no terms of service. We accept no responsibility for your ignorance.
 
 // @host api.LoLQueue.com
-type Connect struct {
+
+type ProfileHandler struct {
 	router *mux.Router
-	db     *sql.DB
+	db     *gorm.DB
 }
 
 func main() {
 	godotenv.Load(".env")
-	c := Connect{}
+	c := ProfileHandler{}
 	c.CreatePostgresConnect()
 	c.MuxInit()
 }
-func (c *Connect) CreatePostgresConnect() {
-	var DataSource string = "postgresql://" + os.Getenv("PGUSER") + os.Getenv("PGPASS") + "@" + os.Getenv("PGHOST") + ":" + os.Getenv("PGPORT") + "/railway"
+func (c *ProfileHandler) CreatePostgresConnect() {
+	var dsn = "postgresql://" + os.Getenv("PGUSER") + os.Getenv("PGPASS") + "@" + os.Getenv("PGHOST") + ":" + os.Getenv("PGPORT") + "/railway"
 
-	db, err := sql.Open("postgres", DataSource)
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if err = db.Ping(); err != nil {
-		log.Fatal(err)
-	} else {
-		log.Println("Connected to Postgres DB")
-	}
-
 	c.db = db
 }
-func (c *Connect) MuxInit() {
+func (c *ProfileHandler) MuxInit() {
 
 	var wait time.Duration
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
@@ -96,7 +95,7 @@ func (c *Connect) MuxInit() {
 	log.Println("shutting down")
 	os.Exit(0)
 }
-func (c *Connect) AddRoutes() {
+func (c *ProfileHandler) AddRoutes() {
 	c.router.PathPrefix("/docs/").Handler(httpSwagger.Handler(
 		httpSwagger.URL(os.Getenv("API_URL")+"/docs/doc.json"), //The url pointing to API definition
 		httpSwagger.DeepLinking(true),
@@ -104,13 +103,243 @@ func (c *Connect) AddRoutes() {
 		httpSwagger.DomID("swagger-ui"),
 	)).Methods(http.MethodGet)
 
-	c.router.HandleFunc("/ping", api.Ping).Methods("GET")
-	c.router.HandleFunc("/lookup/{srv}/{usr}", api.ProfileLookup).Methods("GET")
-	c.router.HandleFunc("/match/{srv}/{usr}", api.GetRecentMatches).Methods("GET")
-	c.router.HandleFunc("/leaderboard", api.GetLeaderboard).Methods("GET")
+	c.router.HandleFunc("/ping", Ping).Methods("GET")
+	c.router.HandleFunc("/lookup/{srv}/{usr}", c.ProfileLookup).Methods("GET")
+	c.router.HandleFunc("/match/{srv}/{usr}", c.GetRecentMatches).Methods("GET")
 
 	//c.router.HandleFunc("/user/{id}", api.ViewUser).Methods("GET")
-	c.router.HandleFunc("/user", api.CreateUser).Methods("POST")
+	c.router.HandleFunc("/user", c.CreateUser).Methods("POST")
 
 	log.Println("Loaded Routes")
+}
+
+//handler funcs
+// Ping godoc
+// @Summary      Pings the API service to ensure that it is active
+// @Description  Ping the API service
+// @Tags         utility
+// @Accept       json
+// @Produce      json
+// @Success      200
+// @Failure      404
+// @Router       /ping [get]
+func Ping(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewEncoder(w).Encode(map[string]string{"data": "Pong"})
+	if err != nil {
+		log.Println("unable to encode response from Ping handler")
+	}
+}
+
+// ProfileLookup godoc
+// @Summary      Show an account
+// @Description  Gets the users account information by their Username and Server
+// @Tags         accounts
+// @Accept       json
+// @Produce      json
+// @Param        srv   path      string  true  "Riot Server"
+// @Param        usr   path      string  true  "Username"
+// @Success      200   {object}  models.LookupResponse
+// @Failure      400
+// @Failure      404
+// @Failure      500
+// @Router       /lookup/{srv}/{usr} [get]
+func (c *ProfileHandler) ProfileLookup(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	//create a new instance of a struct for us to process
+	var userSearch models.UserLookup
+
+	//process the information sent via the PostForm request
+	vars := mux.Vars(r)
+	userSearch.Username = vars["usr"]
+	userSearch.Server = vars["srv"]
+
+	if userSearch.Username == "" || userSearch.Server == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	bySummonerName := api.GetBySummonerName(userSearch.Username, userSearch.Server)
+	rankedinfo := api.GetRankedInfo(bySummonerName.Id, userSearch.Server)
+	championMastery := api.GetChampionMastery(bySummonerName.Id, userSearch.Server)
+
+	if bySummonerName.Name == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	lookupResponse := models.LookupResponse{
+		Username:      bySummonerName.Name,
+		Rank:          rankedinfo.Rank,
+		Tier:          rankedinfo.Tier,
+		Champions:     championMastery,
+		Level:         bySummonerName.SummonerLevel,
+		ProfileIconId: bySummonerName.ProfileIconId,
+		Wins:          rankedinfo.Wins,
+		Losses:        rankedinfo.Losses,
+	}
+
+	reply, err := json.Marshal(lookupResponse)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	_, err = w.Write(reply)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+// GetRecentMatches godoc
+// @Summary      Show recent matches
+// @Description  Show the past 10 matches
+// @Tags         accounts
+// @Accept       json
+// @Produce      json
+// @Param        srv   path      string  true  "Riot Server"
+// @Param        usr   path      string  true  "Username"
+// @Param        usr   query      string  true  "count"
+// @Success      200  {array}    models.MatchDataResp
+// @Failure      400
+// @Failure      404
+// @Failure      500
+// @Router       /match/{srv}/{usr} [get]
+func (c *ProfileHandler) GetRecentMatches(w http.ResponseWriter, r *http.Request) {
+
+	limit := r.URL.Query().Get("count")
+	if limit == "" {
+		// id.asc is the default sort query
+		limit = "20"
+	}
+
+	limitInt, _ := strconv.Atoi(limit)
+	if limitInt > 50 {
+		limitInt = 20
+	}
+
+	var matchList []string
+	matchesData := make([]models.MatchData, limitInt)
+	matchDataReturn := make([]models.Participants, limitInt)
+	matchDataResp := make([]models.MatchDataResp, limitInt)
+
+	w.Header().Set("Content-Type", "application/json")
+
+	//create a new instance of a struct for us to process
+	var userSearch models.UserLookup
+
+	//process the information sent via the PostForm request
+	vars := mux.Vars(r)
+	userSearch.Username = vars["usr"]
+	userSearch.Server = vars["srv"]
+
+	if userSearch.Username == "" || userSearch.Server == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	bySummonerName := api.GetBySummonerName(userSearch.Username, userSearch.Server)
+	matchList = api.MatchList(bySummonerName.Puuid, userSearch.Server, limitInt)
+
+	for i, matchid := range matchList {
+		matchesData[i] = api.MatchInfo(matchid, userSearch.Server)
+	}
+
+	for i, mdata := range matchesData {
+		for _, participant := range mdata.Info.Participants {
+			if participant.Puuid == bySummonerName.Puuid {
+				matchDataReturn[i] = participant
+			}
+			matchDataResp[i].GameID = matchesData[i].Metadata.MatchId
+			matchDataResp[i].GameMode = matchesData[i].Info.GameMode
+			matchDataResp[i].Assists = participant.Assists
+			matchDataResp[i].Deaths = participant.Deaths
+			matchDataResp[i].Kills = participant.Kills
+			matchDataResp[i].Win = participant.Win
+			matchDataResp[i].ChampionName = participant.ChampionName
+		}
+	}
+
+	reply, err := json.Marshal(matchDataResp)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	_, err = w.Write(reply)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+}
+
+// CreateUser godoc
+// @Summary      Create an account
+// @Description  Creates and stores the users data to be used when executing commands/api calls.
+// @Tags         accounts
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}   models.UserDB
+// @Failure      400
+// @Failure      404
+// @Failure      500
+// @Router       /user [post]
+func (c *ProfileHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
+	var newUser models.UserPost
+	var userModel models.UserDB
+
+	w.Header().Set("Content-Type", "application/json")
+
+	err := json.NewDecoder(r.Body).Decode(&newUser)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	tableCheck := c.db.Table(newUser.DiscordServerID)
+	if tableCheck == nil {
+		err = c.db.AutoMigrate(&models.UserPost{}) //creates the table if there isn't already one for the
+		if err != nil {
+			log.Println("error creating new table")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	userCheck := c.db.Table(newUser.DiscordServerID).First(newUser.DiscordID)
+	if userCheck == nil {
+		userInfo := c.db.Table(newUser.DiscordServerID).Create(&newUser)
+		log.Println(userInfo)
+	}
+	w.WriteHeader(http.StatusConflict)
+	log.Println(userModel)
+
+}
+
+// GetLeaderboard godoc
+// @Summary      Get leaderboard data
+// @Description  Get the leaderboards for a specifc discord server ID
+// @Tags         accounts
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}   models.Leaderboard
+// @Failure      400
+// @Failure      404
+// @Failure      500
+// @Router       /leaderboard [get]
+func (c *ProfileHandler) GetLeaderboard(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	data, err := os.ReadFile("./models/MOCK_LEADERBOARD.json")
+	if err != nil {
+		log.Fatalf("Failed to read products list - %s.", err)
+		return
+	}
+
+	_, err = w.Write(data)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }
