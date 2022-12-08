@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -47,6 +48,7 @@ func (c *ProfileHandler) CreatePostgresConnect() {
 		log.Fatal(err)
 	}
 
+	log.Println("Sucessfully created the PostgreSQL server!")
 	c.db = db
 }
 func (c *ProfileHandler) MuxInit() {
@@ -107,8 +109,9 @@ func (c *ProfileHandler) AddRoutes() {
 	c.router.HandleFunc("/lookup/{srv}/{usr}", c.ProfileLookup).Methods("GET")
 	c.router.HandleFunc("/match/{srv}/{usr}", c.GetRecentMatches).Methods("GET")
 
-	//c.router.HandleFunc("/user/{id}", api.ViewUser).Methods("GET")
+	//c.router.HandleFunc("/user", api.ViewUser).Methods("GET")
 	c.router.HandleFunc("/user", c.CreateUser).Methods("POST")
+	c.router.HandleFunc("/leaderboard", c.GetLeaderboard).Methods("GET")
 
 	log.Println("Loaded Routes")
 }
@@ -288,7 +291,6 @@ func (c *ProfileHandler) GetRecentMatches(w http.ResponseWriter, r *http.Request
 // @Router       /user [post]
 func (c *ProfileHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var newUser models.UserPost
-	var userModel models.UserDB
 
 	w.Header().Set("Content-Type", "application/json")
 
@@ -297,24 +299,37 @@ func (c *ProfileHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
-	tableCheck := c.db.Table(newUser.DiscordServerID)
-	if tableCheck == nil {
-		err = c.db.AutoMigrate(&models.UserPost{}) //creates the table if there isn't already one for the
-		if err != nil {
-			log.Println("error creating new table")
-			w.WriteHeader(http.StatusInternalServerError)
-			return
+	//check to see if the server issuing the command exists in the server table
+	q := c.db.Raw(fmt.Sprintf("SELECT * FROM server where id = '%v';", newUser.DiscordServerID))
+	//if it doesn't, add it to the table
+	if q == nil {
+		c.db.Raw(fmt.Sprintf("insert into server (id, name) values ('%v', '%v');", newUser.DiscordServerID, newUser.DiscordServerName))
+	}
+
+	//check to see if the discord user exists
+	q = c.db.Raw(fmt.Sprintf("select id from discord_user where id = '%v';", newUser.DiscordID))
+	//if the user does not exist, create it and add it to the mapping table
+	//if the user does exist, ensure that it is mapped to the server correctly and then exit
+	if q == nil {
+		c.db.Raw(fmt.Sprintf("insert into discord_user (id, username) values (%v, '%v');", newUser.DiscordID, newUser.Username))
+		c.db.Raw(fmt.Sprintf("insert into server_user (server_id, discord_id) values (%v, %v);", newUser.DiscordServerID, newUser.DiscordID))
+	} else {
+		q = c.db.Raw(fmt.Sprintf("select server_id from server_user where discord_id='%v' and server_id='%v';", newUser.DiscordID, newUser.DiscordServerID))
+		if q == nil {
+			//the user existed in the discord_user table but not in the server mapping table
+			c.db.Raw(fmt.Sprintf("insert into server_user (server_id, discord_id) values (%v, %v);", newUser.DiscordServerID, newUser.DiscordID))
+			w.WriteHeader(http.StatusCreated)
+		} else {
+			//the user already existed in all tables
+			w.WriteHeader(http.StatusAlreadyReported)
 		}
 	}
-
-	userCheck := c.db.Table(newUser.DiscordServerID).First(newUser.DiscordID)
-	if userCheck == nil {
-		userInfo := c.db.Table(newUser.DiscordServerID).Create(&newUser)
-		log.Println(userInfo)
-	}
-	w.WriteHeader(http.StatusConflict)
-	log.Println(userModel)
-
+	//the user did not exist in discord which means it does not exist in riot_user either
+	//create the riot_user table for the user
+	rr := api.GetBySummonerName(newUser.Username, newUser.RiotServer)
+	c.db.Raw(fmt.Sprintf("insert into riot_user (puuid, username, server, riot_account_id) values ('%v', '%v', '%v', '%v')", rr.Puuid, newUser.Username, newUser.RiotServer, rr.AccountId))
+	c.db.Raw(fmt.Sprintf("insert into discord_user_riot_user (discord_id, puuid) values ('%v', '%v')", newUser.DiscordID, rr.Puuid))
+	w.WriteHeader(http.StatusCreated)
 }
 
 // GetLeaderboard godoc
@@ -333,7 +348,7 @@ func (c *ProfileHandler) GetLeaderboard(w http.ResponseWriter, r *http.Request) 
 
 	data, err := os.ReadFile("./models/MOCK_LEADERBOARD.json")
 	if err != nil {
-		log.Fatalf("Failed to read products list - %s.", err)
+		log.Fatalf("Failed to read leaderboard - %s.", err)
 		return
 	}
 

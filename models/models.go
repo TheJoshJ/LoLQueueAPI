@@ -3,20 +3,11 @@ package models
 //structs specific to LoLQueue API
 
 type UserPost struct {
-	Username        string `json:"username"`
-	RiotServer      string `json:"riotServer"`
-	DiscordID       string `json:"discordID"`
-	DiscordServerID string `json:"discordServerID"`
-}
-
-type UserDB struct {
-	Discordid       string `json:"discordID"`
-	DiscordServerID string `json:"discordServerID"`
-	Username        string `json:"username"`
-	Server          string `json:"server"`
-	Puuid           string `json:"puuid"`
-	Id              string `json:"id"`
-	RankedTier      string `json:"RankedTier"`
+	Username          string `json:"username"`
+	RiotServer        string `json:"riotServer"`
+	DiscordID         string `json:"discordID"`
+	DiscordServerID   string `json:"discordServerID"`
+	DiscordServerName string `json:"discordServerName"`
 }
 
 type UserLookup struct {
