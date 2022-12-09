@@ -352,7 +352,7 @@ func (c *ProfileHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	c.db.Table("server_user_riot_user").Where(&models.Discord_user_riot_user{Discord_id: newUser.DiscordID}).Or(&models.Discord_user_riot_user{Puuid: rr.Puuid}).Find(&serverUser)
+	q = c.db.Table("server_user_riot_user").Where(&models.Discord_user_riot_user{Discord_id: newUser.DiscordID}).Or(&models.Discord_user_riot_user{Puuid: rr.Puuid}).Find(&serverUser)
 	if q.RowsAffected != 0 {
 		w.WriteHeader(http.StatusAlreadyReported)
 		return
