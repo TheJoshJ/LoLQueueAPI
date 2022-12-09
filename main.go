@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -454,8 +455,9 @@ func (c *ProfileHandler) UserLookup(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	for _, val := range servers {
-		c.db.Table("server").Where(&models.Server{Id: val.Server_id}).Find(&server)
+	log.Println(servers)
+	for i := 0; i < len(servers); i++ {
+		c.db.Raw(fmt.Sprintf("select name from server where id = '%v';", servers[i].Server_id)).First(&server)
 		response.Servers = append(response.Servers, server.Name)
 	}
 
