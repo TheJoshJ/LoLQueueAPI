@@ -109,6 +109,7 @@ func (c *ProfileHandler) AddRoutes() {
 	c.router.HandleFunc("/ping", Ping).Methods("GET")
 	c.router.HandleFunc("/lookup/{srv}/{usr}", c.ProfileLookup).Methods("GET")
 	c.router.HandleFunc("/match/{srv}/{usr}", c.GetRecentMatches).Methods("GET")
+	c.router.HandleFunc("/user/{id}", c.UserLookup).Methods("GET")
 
 	//c.router.HandleFunc("/user", api.ViewUser).Methods("GET")
 	c.router.HandleFunc("/user", c.CreateUser).Methods("POST")
@@ -435,4 +436,49 @@ func (c *ProfileHandler) GetLeaderboard(w http.ResponseWriter, r *http.Request) 
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+}
+
+func (c *ProfileHandler) UserLookup(w http.ResponseWriter, r *http.Request) {
+	var q *gorm.DB
+	var servers []models.Server_user
+	var server models.Server
+	var response models.UserLookupResponse
+
+	//get the discord ID of the user from the request URL
+	vars := mux.Vars(r)
+	discordID := vars["id"]
+
+	//get all server names associated with the discord ID
+	q = c.db.Table("server_user").Where(&models.Server_user{Discord_id: discordID}).Find(&servers)
+	if q.RowsAffected == 0 {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	for _, val := range servers {
+		c.db.Table("server").Where(&models.Server{Id: val.Server_id}).Find(&server)
+		response.Servers = append(response.Servers, server.Name)
+	}
+
+	//get the puuid associated with the Discord ID
+	var puuid string
+	c.db.Table("discord_user_riot_user").Where(&models.Discord_user_riot_user{Discord_id: discordID}).Find(&puuid)
+
+	//get the Riot Username and Server associated with the puuid
+	var riotInfo models.Riot_user
+	c.db.Table("riot_user").Where(&models.Riot_user{Puuid: puuid}).Find(&riotInfo)
+	response.RiotServer = riotInfo.Server
+	response.RiotUsername = riotInfo.Username
+
+	w.WriteHeader(http.StatusOK)
+	reply, err := json.Marshal(response)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	_, err = w.Write(reply)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	return
 }

@@ -16,6 +16,14 @@ type UserLookup struct {
 	Server   string `json:"server"`
 }
 
+// UserLookupResponse - lolqueue user lookup
+type UserLookupResponse struct {
+	Servers      []string `json:"servers"`
+	RiotUsername string   `json:"riotUsername"`
+	RiotServer   string   `json:"riotServer"`
+}
+
+// LookupResponse - riotgames user lookup
 type LookupResponse struct {
 	Username      string                `json:"username"`
 	Tier          string                `json:"tier"`
