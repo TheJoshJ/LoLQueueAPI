@@ -17,7 +17,9 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sort"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -211,9 +213,10 @@ func (c *ProfileHandler) ProfileLookup(w http.ResponseWriter, r *http.Request) {
 func (c *ProfileHandler) GetRecentMatches(w http.ResponseWriter, r *http.Request) {
 
 	limit := r.URL.Query().Get("count")
+	log.Println(limit)
 	if limit == "" {
 		// id.asc is the default sort query
-		limit = "20"
+		limit = "10"
 	}
 
 	limitInt, _ := strconv.Atoi(limit)
@@ -222,7 +225,7 @@ func (c *ProfileHandler) GetRecentMatches(w http.ResponseWriter, r *http.Request
 	}
 
 	var matchList []string
-	matchesData := make([]models.MatchData, limitInt)
+	matchesData := make([]models.MatchData, 0)
 	matchDataReturn := make([]models.Participants, limitInt)
 	matchDataResp := make([]models.MatchDataResp, limitInt)
 
@@ -240,31 +243,55 @@ func (c *ProfileHandler) GetRecentMatches(w http.ResponseWriter, r *http.Request
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
 	bySummonerName, err := api.GetBySummonerName(userSearch.Username, userSearch.Server)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
+
 	matchList = api.MatchList(bySummonerName.Puuid, userSearch.Server, limitInt)
 
-	for i, matchid := range matchList {
-		matchesData[i] = api.MatchInfo(matchid, userSearch.Server)
+	ch := make(chan models.MatchData)
+	for _, matchid := range matchList {
+		go func(matchid string) {
+			match := api.MatchInfo(matchid, userSearch.Server)
+			ch <- match
+		}(matchid)
 	}
 
-	for i, mdata := range matchesData {
+	log.Println(len(matchesData), "between functions")
+
+	for i := 0; i < limitInt; i++ {
+		match := <-ch
+		log.Println("match Received")
+		matchesData = append(matchesData, match)
+		log.Println("length of matches data", len(matchesData))
+		log.Println("index", i)
+	}
+	close(ch)
+	log.Println("channel closed!")
+	log.Println(len(matchesData))
+
+	for idx, mdata := range matchesData {
+		log.Println(idx)
 		for _, participant := range mdata.Info.Participants {
 			if participant.Puuid == bySummonerName.Puuid {
-				matchDataReturn[i] = participant
+				matchDataReturn[idx] = participant
 			}
-			matchDataResp[i].GameID = matchesData[i].Metadata.MatchId
-			matchDataResp[i].GameMode = matchesData[i].Info.GameMode
-			matchDataResp[i].Assists = participant.Assists
-			matchDataResp[i].Deaths = participant.Deaths
-			matchDataResp[i].Kills = participant.Kills
-			matchDataResp[i].Win = participant.Win
-			matchDataResp[i].ChampionName = participant.ChampionName
+			matchDataResp[idx].GameID = strings.ReplaceAll(matchesData[idx].Metadata.MatchId, "NA1_", "")
+			matchDataResp[idx].GameMode = matchesData[idx].Info.GameMode
+			matchDataResp[idx].Assists = participant.Assists
+			matchDataResp[idx].Deaths = participant.Deaths
+			matchDataResp[idx].Kills = participant.Kills
+			matchDataResp[idx].Win = participant.Win
+			matchDataResp[idx].ChampionName = participant.ChampionName
 		}
 	}
+
+	sort.Slice(matchDataResp, func(i, j int) bool {
+		return matchDataResp[i].GameID > matchDataResp[j].GameID
+	})
 
 	reply, err := json.Marshal(matchDataResp)
 	if err != nil {
@@ -337,7 +364,7 @@ func (c *ProfileHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		})
 	} else {
 		//user already exists alongside this server - return
-		w.WriteHeader(http.StatusAlreadyReported)
+		w.WriteHeader(http.StatusConflict)
 		return
 	}
 	//does the username already exist within the riot_user table?
