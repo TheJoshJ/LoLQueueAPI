@@ -293,6 +293,7 @@ func (c *ProfileHandler) GetRecentMatches(w http.ResponseWriter, r *http.Request
 // @Router       /user [post]
 func (c *ProfileHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var newUser models.UserPost
+	var q *gorm.DB
 
 	w.Header().Set("Content-Type", "application/json")
 
@@ -315,14 +316,20 @@ func (c *ProfileHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var discordUser models.Discord_user
 	var serverUser models.Server_user
 
-	q := c.db.Table("server").First(&server, "id = ?", newUser.DiscordServerID)
+	q = c.db.Table("server").First(&server, "id = ?", newUser.DiscordServerID)
 	//if it doesn't, add it to the table
-	if q.QueryFields == false {
+	if q.RowsAffected == 0 {
 		c.db.Table("server").Create(&models.Server{
 			Id:   newUser.DiscordServerID,
 			Name: newUser.DiscordServerName,
 		})
 	}
+
+	q = c.db.Table("server_user_riot_user").Where(&models.Discord_user_riot_user{Discord_id: newUser.DiscordID, Puuid: rr.Puuid}).First(&serverUser)
+	if q.RowsAffected != 0 {
+		w.WriteHeader(http.StatusAlreadyReported)
+	}
+
 	q = c.db.Table("discord_user").First(&discordUser, "id = ?", newUser.DiscordID)
 	if q.RowsAffected == 0 {
 		c.db.Table("discord_user").Create(&models.Discord_user{
