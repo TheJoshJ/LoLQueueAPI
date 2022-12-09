@@ -327,6 +327,7 @@ func (c *ProfileHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	q = c.db.Table("discord_user").First(&discordUser, "id = ?", newUser.DiscordID)
 	if q.RowsAffected == 0 {
+		//if the user does not exist in the discord_user table, create it.
 		c.db.Table("discord_user").Create(&models.Discord_user{
 			Id:       newUser.DiscordID,
 			Username: newUser.DiscordUsername,
@@ -344,19 +345,24 @@ func (c *ProfileHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 				Server_id:  newUser.DiscordServerID,
 				Discord_id: newUser.DiscordID,
 			})
+			q = c.db.Table("discord_user_riot_user").Where(&models.Discord_user_riot_user{Discord_id: newUser.DiscordID, Puuid: rr.Puuid}).Find(&serverUser)
+			log.Println(q)
+			if q.RowsAffected != 0 {
+				//the user was already mapped to a riot account, so we will return early and report "already reported"
+				w.WriteHeader(http.StatusConflict)
+				return
+			}
+			//the user wasn't already mapped to a riot account, so we will return early and let them know that their profile was created.
 			w.WriteHeader(http.StatusCreated)
 			return
 		} else {
+			//the user existed in teh discord_user table and in the server mapping table
 			w.WriteHeader(http.StatusAlreadyReported)
 			return
 		}
 	}
 
-	q = c.db.Table("server_user_riot_user").Where(&models.Discord_user_riot_user{Discord_id: newUser.DiscordID}).Or(&models.Discord_user_riot_user{Puuid: rr.Puuid}).Find(&serverUser)
-	if q.RowsAffected != 0 {
-		w.WriteHeader(http.StatusAlreadyReported)
-		return
-	}
+	//the user already existed within the discord_user table
 
 	//the user did not exist in discord which means it does not exist in riot_user either
 	//create the riot_user table for the user
