@@ -3,7 +3,8 @@ package models
 //structs specific to LoLQueue API
 
 type UserPost struct {
-	Username          string `json:"username"`
+	DiscordUsername   string `json:"discordUsername"`
+	RiotUsername      string `json:"riotUsername"`
 	RiotServer        string `json:"riotServer"`
 	DiscordID         string `json:"discordID"`
 	DiscordServerID   string `json:"discordServerID"`

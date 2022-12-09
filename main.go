@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -297,38 +296,65 @@ func (c *ProfileHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&newUser)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
+	log.Println(newUser)
 
 	//check to see if the server issuing the command exists in the server table
-	q := c.db.Raw(fmt.Sprintf("SELECT * FROM server where id = '%v';", newUser.DiscordServerID))
-	//if it doesn't, add it to the table
-	if q == nil {
-		c.db.Raw(fmt.Sprintf("insert into server (id, name) values ('%v', '%v');", newUser.DiscordServerID, newUser.DiscordServerName))
-	}
+	var server models.Server
+	var discordUser models.Discord_user
+	var serverUser models.Server_user
 
+	q := c.db.Table("server").First(&server, "id = ?", newUser.DiscordServerID)
+	//if it doesn't, add it to the table
+	if q.QueryFields == false {
+		c.db.Table("server").Create(&models.Server{
+			Id:   newUser.DiscordServerID,
+			Name: newUser.DiscordServerName,
+		})
+	}
 	//check to see if the discord user exists
-	q = c.db.Raw(fmt.Sprintf("select id from discord_user where id = '%v';", newUser.DiscordID))
+	q = c.db.Table("discord_user").First(&discordUser, "id = ?", newUser.DiscordID)
 	//if the user does not exist, create it and add it to the mapping table
 	//if the user does exist, ensure that it is mapped to the server correctly and then exit
-	if q == nil {
-		c.db.Raw(fmt.Sprintf("insert into discord_user (id, username) values (%v, '%v');", newUser.DiscordID, newUser.Username))
-		c.db.Raw(fmt.Sprintf("insert into server_user (server_id, discord_id) values (%v, %v);", newUser.DiscordServerID, newUser.DiscordID))
+	if q.RowsAffected == 0 {
+		c.db.Table("discord_user").Create(&models.Discord_user{
+			Id:       newUser.DiscordID,
+			Username: newUser.DiscordUsername,
+		})
+
+		c.db.Table("server_user").Create(&models.Server_user{
+			Server_id:  newUser.DiscordServerID,
+			Discord_id: newUser.DiscordID,
+		})
 	} else {
-		q = c.db.Raw(fmt.Sprintf("select server_id from server_user where discord_id='%v' and server_id='%v';", newUser.DiscordID, newUser.DiscordServerID))
-		if q == nil {
+		q = c.db.Table("server_user").Where(&models.Server_user{Discord_id: newUser.DiscordID, Server_id: newUser.DiscordServerID}).First(&serverUser)
+		if q.RowsAffected == 0 {
 			//the user existed in the discord_user table but not in the server mapping table
-			c.db.Raw(fmt.Sprintf("insert into server_user (server_id, discord_id) values (%v, %v);", newUser.DiscordServerID, newUser.DiscordID))
+			c.db.Table("server_user").Create(&models.Server_user{
+				Server_id:  newUser.DiscordServerID,
+				Discord_id: newUser.DiscordID,
+			})
 			w.WriteHeader(http.StatusCreated)
+			return
 		} else {
-			//the user already existed in all tables
 			w.WriteHeader(http.StatusAlreadyReported)
+			return
 		}
 	}
 	//the user did not exist in discord which means it does not exist in riot_user either
 	//create the riot_user table for the user
-	rr := api.GetBySummonerName(newUser.Username, newUser.RiotServer)
-	c.db.Raw(fmt.Sprintf("insert into riot_user (puuid, username, server, riot_account_id) values ('%v', '%v', '%v', '%v')", rr.Puuid, newUser.Username, newUser.RiotServer, rr.AccountId))
-	c.db.Raw(fmt.Sprintf("insert into discord_user_riot_user (discord_id, puuid) values ('%v', '%v')", newUser.DiscordID, rr.Puuid))
+	rr := api.GetBySummonerName(newUser.RiotUsername, newUser.RiotServer)
+	c.db.Table("riot_user").Create(&models.Riot_user{
+		Puuid:           rr.Puuid,
+		Username:        newUser.RiotUsername,
+		Server:          newUser.RiotServer,
+		Riot_account_id: rr.AccountId,
+	})
+	c.db.Table("discord_user_riot_user").Create(&models.Discord_user_riot_user{
+		Puuid:      rr.Puuid,
+		Discord_id: newUser.DiscordID,
+	})
 	w.WriteHeader(http.StatusCreated)
 }
 
