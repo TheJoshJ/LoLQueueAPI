@@ -163,14 +163,13 @@ func (c *ProfileHandler) ProfileLookup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bySummonerName := api.GetBySummonerName(userSearch.Username, userSearch.Server)
-	rankedinfo := api.GetRankedInfo(bySummonerName.Id, userSearch.Server)
-	championMastery := api.GetChampionMastery(bySummonerName.Id, userSearch.Server)
-
-	if bySummonerName.Name == "" {
+	bySummonerName, err := api.GetBySummonerName(userSearch.Username, userSearch.Server)
+	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
+	rankedinfo := api.GetRankedInfo(bySummonerName.Id, userSearch.Server)
+	championMastery := api.GetChampionMastery(bySummonerName.Id, userSearch.Server)
 
 	lookupResponse := models.LookupResponse{
 		Username:      bySummonerName.Name,
@@ -241,7 +240,11 @@ func (c *ProfileHandler) GetRecentMatches(w http.ResponseWriter, r *http.Request
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	bySummonerName := api.GetBySummonerName(userSearch.Username, userSearch.Server)
+	bySummonerName, err := api.GetBySummonerName(userSearch.Username, userSearch.Server)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 	matchList = api.MatchList(bySummonerName.Puuid, userSearch.Server, limitInt)
 
 	for i, matchid := range matchList {
@@ -300,6 +303,13 @@ func (c *ProfileHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println(newUser)
 
+	//check to ensure that the username exists within Riot's servers before anything else
+	rr, err := api.GetBySummonerName(newUser.RiotUsername, newUser.RiotServer)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
 	//check to see if the server issuing the command exists in the server table
 	var server models.Server
 	var discordUser models.Discord_user
@@ -313,10 +323,7 @@ func (c *ProfileHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 			Name: newUser.DiscordServerName,
 		})
 	}
-	//check to see if the discord user exists
 	q = c.db.Table("discord_user").First(&discordUser, "id = ?", newUser.DiscordID)
-	//if the user does not exist, create it and add it to the mapping table
-	//if the user does exist, ensure that it is mapped to the server correctly and then exit
 	if q.RowsAffected == 0 {
 		c.db.Table("discord_user").Create(&models.Discord_user{
 			Id:       newUser.DiscordID,
@@ -344,7 +351,6 @@ func (c *ProfileHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	//the user did not exist in discord which means it does not exist in riot_user either
 	//create the riot_user table for the user
-	rr := api.GetBySummonerName(newUser.RiotUsername, newUser.RiotServer)
 	c.db.Table("riot_user").Create(&models.Riot_user{
 		Puuid:           rr.Puuid,
 		Username:        newUser.RiotUsername,
@@ -356,6 +362,8 @@ func (c *ProfileHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		Discord_id: newUser.DiscordID,
 	})
 	w.WriteHeader(http.StatusCreated)
+	//no need to check to see if the user exists within the riot table, they would need to use /update to update that info
+	//this ensures that they keep only one riot account associated with their DiscordID
 }
 
 // GetLeaderboard godoc

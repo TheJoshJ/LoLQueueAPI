@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"log"
 	"main/models"
@@ -59,7 +60,7 @@ func GetChampionMastery(id string, server string) []models.ChampionMasteryResp {
 	return champions
 }
 
-func GetBySummonerName(user string, server string) models.RiotBySummonerName {
+func GetBySummonerName(user string, server string) (models.RiotBySummonerName, error) {
 
 	var bySummonerName models.RiotBySummonerName
 
@@ -81,9 +82,10 @@ func GetBySummonerName(user string, server string) models.RiotBySummonerName {
 
 		//log.Println(bySummonerName)
 
-		return bySummonerName
+		return bySummonerName, nil
 	}
-	return bySummonerName
+	err := errors.New("user not found")
+	return bySummonerName, err
 }
 
 func MatchInfo(matchid string, srv string) models.MatchData {
