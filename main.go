@@ -325,11 +325,6 @@ func (c *ProfileHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	q = c.db.Table("server_user_riot_user").Where(&models.Discord_user_riot_user{Discord_id: newUser.DiscordID, Puuid: rr.Puuid}).First(&serverUser)
-	if q.RowsAffected != 0 {
-		w.WriteHeader(http.StatusAlreadyReported)
-	}
-
 	q = c.db.Table("discord_user").First(&discordUser, "id = ?", newUser.DiscordID)
 	if q.RowsAffected == 0 {
 		c.db.Table("discord_user").Create(&models.Discord_user{
@@ -356,6 +351,13 @@ func (c *ProfileHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+
+	c.db.Table("server_user_riot_user").Where(&models.Discord_user_riot_user{Discord_id: newUser.DiscordID}).Or(&models.Discord_user_riot_user{Puuid: rr.Puuid}).Find(&serverUser)
+	if q.RowsAffected != 0 {
+		w.WriteHeader(http.StatusAlreadyReported)
+		return
+	}
+
 	//the user did not exist in discord which means it does not exist in riot_user either
 	//create the riot_user table for the user
 	c.db.Table("riot_user").Create(&models.Riot_user{
