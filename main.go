@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -12,7 +11,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
-	api "main/api/handler"
+	api "main/api/riot"
 	_ "main/docs"
 	"main/models"
 	"net/http"
@@ -28,7 +27,6 @@ import (
 // @version 1.0
 // @description This is the documentation for the LoLQueue Api Service
 // @termsOfService There are no terms of service. We accept no responsibility for your ignorance.
-
 // @host api.LoLQueue.com
 
 type ProfileHandler struct {
@@ -107,19 +105,25 @@ func (c *ProfileHandler) AddRoutes() {
 		httpSwagger.DomID("swagger-ui"),
 	)).Methods(http.MethodGet)
 
-	c.router.HandleFunc("/ping", Ping).Methods("GET")
-	c.router.HandleFunc("/lookup/{srv}/{usr}", c.ProfileLookup).Methods("GET")
-	c.router.HandleFunc("/match/{srv}/{usr}", c.GetRecentMatches).Methods("GET")
-	c.router.HandleFunc("/user/{id}", c.UserLookup).Methods("GET")
+	//utility
+	c.router.HandleFunc("/v1/ping", Ping).Methods("GET")
 
-	//c.router.HandleFunc("/user", api.ViewUser).Methods("GET")
-	c.router.HandleFunc("/user", c.CreateUser).Methods("POST")
-	c.router.HandleFunc("/leaderboard", c.GetLeaderboard).Methods("GET")
+	//riot
+	c.router.HandleFunc("/v1/lookup/{srv}/{usr}", c.ProfileLookup).Methods("GET")
+	c.router.HandleFunc("/v1/match/{srv}/{usr}", c.GetRecentMatches).Methods("GET")
+
+	//profiles
+	c.router.HandleFunc("/v1/user/{id}", c.LookupUser).Methods("GET")
+	c.router.HandleFunc("/v1/user", c.CreateUser).Methods("POST")
+	c.router.HandleFunc("/v1/user", c.UpdateUser).Methods("PUT")
+	c.router.HandleFunc("/v1/user/{id}", c.DeleteUser).Methods("Delete")
+
+	//services
+	c.router.HandleFunc("/v1/leaderboard", c.GetLeaderboard).Methods("GET")
 
 	log.Println("Loaded Routes")
 }
 
-//handler funcs
 // Ping godoc
 // @Summary      Pings the API service to ensure that it is active
 // @Description  Ping the API service
@@ -128,7 +132,7 @@ func (c *ProfileHandler) AddRoutes() {
 // @Produce      json
 // @Success      200
 // @Failure      404
-// @Router       /ping [get]
+// @Router      /v1/ping [get]
 func Ping(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
@@ -141,7 +145,7 @@ func Ping(w http.ResponseWriter, r *http.Request) {
 // ProfileLookup godoc
 // @Summary      Show an account
 // @Description  Gets the users account information by their Username and Server
-// @Tags         accounts
+// @Tags         Riot
 // @Accept       json
 // @Produce      json
 // @Param        srv   path      string  true  "Riot Server"
@@ -150,14 +154,14 @@ func Ping(w http.ResponseWriter, r *http.Request) {
 // @Failure      400
 // @Failure      404
 // @Failure      500
-// @Router       /lookup/{srv}/{usr} [get]
+// @Router       /v1/lookup/{srv}/{usr} [get]
 func (c *ProfileHandler) ProfileLookup(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	//create a new instance of a struct for us to process
 	var userSearch models.UserLookup
 
-	//process the information sent via the PostForm request
+	//process the information from the URL
 	vars := mux.Vars(r)
 	userSearch.Username = vars["usr"]
 	userSearch.Server = vars["srv"]
@@ -201,7 +205,7 @@ func (c *ProfileHandler) ProfileLookup(w http.ResponseWriter, r *http.Request) {
 // GetRecentMatches godoc
 // @Summary      Show recent matches
 // @Description  Show the past 10 matches
-// @Tags         accounts
+// @Tags         Riot
 // @Accept       json
 // @Produce      json
 // @Param        srv   path      string  true  "Riot Server"
@@ -211,7 +215,7 @@ func (c *ProfileHandler) ProfileLookup(w http.ResponseWriter, r *http.Request) {
 // @Failure      400
 // @Failure      404
 // @Failure      500
-// @Router       /match/{srv}/{usr} [get]
+// @Router       /v1/match/{srv}/{usr} [get]
 func (c *ProfileHandler) GetRecentMatches(w http.ResponseWriter, r *http.Request) {
 
 	limit := r.URL.Query().Get("count")
@@ -261,20 +265,11 @@ func (c *ProfileHandler) GetRecentMatches(w http.ResponseWriter, r *http.Request
 			ch <- match
 		}(matchid)
 	}
-
-	log.Println(len(matchesData), "between functions")
-
 	for i := 0; i < limitInt; i++ {
 		match := <-ch
-		log.Println("match Received")
 		matchesData = append(matchesData, match)
-		log.Println("length of matches data", len(matchesData))
-		log.Println("index", i)
 	}
 	close(ch)
-	log.Println("channel closed!")
-	log.Println(len(matchesData))
-
 	for idx, mdata := range matchesData {
 		log.Println(idx)
 		for _, participant := range mdata.Info.Participants {
@@ -309,17 +304,45 @@ func (c *ProfileHandler) GetRecentMatches(w http.ResponseWriter, r *http.Request
 
 }
 
-// CreateUser godoc
-// @Summary      Create an account
-// @Description  Creates and stores the users data to be used when executing commands/api calls.
+// GetLeaderboard godoc
+// @Summary      Get leaderboard data
+// @Description  Get the leaderboards for a specifc discord server ID
 // @Tags         accounts
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}   models.UserDB
+// @Success      200  {object}   models.Leaderboard
 // @Failure      400
 // @Failure      404
 // @Failure      500
-// @Router       /user [post]
+// @Router       /v1/leaderboard [get]
+func (c *ProfileHandler) GetLeaderboard(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	data, err := os.ReadFile("./models/MOCK_LEADERBOARD.json")
+	if err != nil {
+		log.Fatalf("Failed to read leaderboard - %s.", err)
+		return
+	}
+
+	_, err = w.Write(data)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+// CreateUser godoc
+// @Summary      Create an account
+// @Description  Creates and stores the users data to be used when executing commands/api calls.
+// @Tags         profiles
+// @Accept       json
+// @Produce      json
+// @Success      201
+// @Failure      400
+// @Failure      404
+// @Failure      409
+// @Failure      500
+// @Router      /v1/user [post]
 func (c *ProfileHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var server models.Server
 	var discordUser models.Discord_user
@@ -382,6 +405,10 @@ func (c *ProfileHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	//since the username did not exist in the riot_user table get the information from Riot.
 	rr, err := api.GetBySummonerName(newUser.RiotUsername, newUser.RiotServer)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 	//does the puuid already exist in the duru table?
 	q = c.db.Table("discord_user_riot_user").Where("puuid = ?", rr.Puuid).Or("discord_id = ?", newUser.DiscordID).First(&duru)
 	log.Println(q.RowsAffected)
@@ -393,7 +420,7 @@ func (c *ProfileHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	//puuid does not exist, is the username valid?
 	if err != nil {
 		//add to server_user map and exit - not found
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	//since the username is valid, add data to riot_user
@@ -412,37 +439,21 @@ func (c *ProfileHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-// GetLeaderboard godoc
-// @Summary      Get leaderboard data
-// @Description  Get the leaderboards for a specifc discord server ID
-// @Tags         accounts
+// LookupUser godoc
+// @Summary      Look up a profile
+// @Description  Looks up a users profile to display which servers they are part of in addidion to their stored riot account information.
+// @Tags         profiles
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}   models.Leaderboard
-// @Failure      400
+// @Param        id   path      string  true  "id"
+// @Success      200  {object}   models.UserLookupResponse
 // @Failure      404
 // @Failure      500
-// @Router       /leaderboard [get]
-func (c *ProfileHandler) GetLeaderboard(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	data, err := os.ReadFile("./models/MOCK_LEADERBOARD.json")
-	if err != nil {
-		log.Fatalf("Failed to read leaderboard - %s.", err)
-		return
-	}
-
-	_, err = w.Write(data)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-}
-
-func (c *ProfileHandler) UserLookup(w http.ResponseWriter, r *http.Request) {
+// @Router       /v1/user/{id} [get]
+func (c *ProfileHandler) LookupUser(w http.ResponseWriter, r *http.Request) {
 	var q *gorm.DB
 	var servers []models.Server_user
-	var server models.Server
+	var srv models.Server
 	var response models.UserLookupResponse
 
 	//get the discord ID of the user from the request URL
@@ -455,10 +466,11 @@ func (c *ProfileHandler) UserLookup(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	log.Println(servers)
+
 	for i := 0; i < len(servers); i++ {
-		c.db.Raw(fmt.Sprintf("select name from server where id = '%v';", servers[i].Server_id)).First(&server)
-		response.Servers = append(response.Servers, server.Name)
+		c.db.Table("server").Where("id = ?", servers[i].Server_id).Find(&srv)
+		response.Servers = append(response.Servers, srv.Name)
+		srv.Id = ""
 	}
 
 	//get the puuid associated with the Discord ID
@@ -483,4 +495,146 @@ func (c *ProfileHandler) UserLookup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	return
+}
+
+// UpdateUser godoc
+// @Summary      Update a profile
+// @Description  Updates the users profile.
+// @Tags         profiles
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "id"
+// @Success      200
+// @Failure      400
+// @Failure      404
+// @Failure      409
+// @Failure      500
+// @Router       /v1/user/{id} [put]
+func (c *ProfileHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
+	var q *gorm.DB
+	var uUser models.UserPut
+	var discordUser models.Discord_user
+	var serverUser models.Server_user
+	var duru models.Discord_user_riot_user
+
+	w.Header().Set("Content-Type", "application/json")
+
+	err := json.NewDecoder(r.Body).Decode(&uUser)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	//does the user already exist in discord_user
+	q = c.db.Table("discord_user").First(&discordUser, "id = ?", uUser.DiscordID)
+	if q.RowsAffected == 0 {
+		//if not, exit 404 not found
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	//does the user have a profile with this server?
+	q = c.db.Table("server_user").Where(&models.Server_user{Discord_id: uUser.DiscordID, Server_id: uUser.DiscordServerID}).First(&serverUser)
+	if q.RowsAffected == 0 {
+		//if not, exit 404 not found
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	//does the user have any information in RUDU?
+	q = c.db.Table("discord_user_riot_user").Where("discord_id = ?", uUser.DiscordID).First(&duru)
+	if q.RowsAffected == 0 {
+		//if not, exit 404 status conflict
+		w.WriteHeader(http.StatusConflict)
+		return
+	}
+
+	//if no, is the provided username valid?
+	rr, err := api.GetBySummonerName(uUser.RiotUsername, uUser.RiotServer)
+	if err != nil {
+		//if no, exit 400 bad request
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	//if the username is valid, update the riot_user table.
+	q = c.db.Table("riot_user").Where("puuid = ?", duru.Puuid).Updates(models.Riot_user{Puuid: rr.Puuid, Username: uUser.RiotUsername, Server: uUser.RiotServer, Riot_account_id: rr.AccountId})
+	if q.RowsAffected == 0 {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	return
+}
+
+// DeleteUser godoc
+// @Summary      Delete a profile
+// @Description  Deletes the users profile by supplying the discord id in the path along with the server ID as a URL param.
+// @Tags         profiles
+// @Accept       json
+// @Param        id   path      string  true  "id"
+// @Param        discordID    query     string     false  "string serverid"
+// @Produce      json
+// @Success      200
+// @Failure      404
+// @Failure      500
+// @Router       /v1/user/{id} [delete]
+func (c *ProfileHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	var q *gorm.DB
+	var uDel models.UserDel
+	var discordUser models.Discord_user
+	var serverUser models.Server_user
+	var riotUser models.Riot_user
+	var duru models.Discord_user_riot_user
+
+	vars := mux.Vars(r)
+	uDel.DiscordID = vars["id"]
+	uDel.DiscordServerID = r.URL.Query().Get("serverid")
+
+	//process the request
+	w.Header().Set("Content-Type", "application/json")
+
+	if uDel.DiscordServerID == "" {
+		//internal service error here because that means that the bot/website didn't specify a server correctly
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	//does the user already exist
+	q = c.db.Table("discord_user").Where("id = ?", uDel.DiscordID).First(&discordUser)
+	log.Println(q.RowsAffected)
+	if q.RowsAffected == 0 {
+		//if not, exit 404
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	//does the user have a profile with this server?
+	q = c.db.Table("server_user").Where("server_id = ? AND discord_id = ?", uDel.DiscordServerID, uDel.DiscordID).First(&serverUser)
+	if q.RowsAffected == 0 {
+		//if not, exit 404
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	//get the puuid from duru
+	q = c.db.Table("discord_user_riot_user").Where("discord_id = ?", uDel.DiscordID).First(&duru)
+	if q.RowsAffected == 0 {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	//delete the row where the puuid matches in riot_user
+	q = c.db.Table("riot_user").Where(models.Riot_user{Puuid: duru.Puuid}).Delete(&riotUser)
+	if q.RowsAffected == 0 {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	//delete the row where the discord and server id match in server_user
+	q = c.db.Table("server_user").Where("server_id = ? AND discord_id = ?", uDel.DiscordServerID, uDel.DiscordID).Delete(&uDel)
+	if q.RowsAffected == 0 {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+
 }

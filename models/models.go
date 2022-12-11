@@ -11,19 +11,31 @@ type UserPost struct {
 	DiscordServerName string `json:"discordServerName"`
 }
 
+type UserPut struct {
+	RiotUsername    string `json:"riotUsername"`
+	RiotServer      string `json:"riotServer"`
+	DiscordID       string `json:"discordID"`
+	DiscordServerID string `json:"discordServerID"`
+}
+
+type UserDel struct {
+	DiscordID       string `json:"discordID"`
+	DiscordServerID string `json:"discordServerID"`
+}
+
 type UserLookup struct {
 	Username string `json:"username"`
 	Server   string `json:"server"`
 }
 
-// UserLookupResponse - lolqueue user lookup
+//lolqueue user lookup
 type UserLookupResponse struct {
 	Servers      []string `json:"servers"`
 	RiotUsername string   `json:"riotUsername"`
 	RiotServer   string   `json:"riotServer"`
 }
 
-// LookupResponse - riotgames user lookup
+//riotgames user lookup
 type LookupResponse struct {
 	Username      string                `json:"username"`
 	Tier          string                `json:"tier"`

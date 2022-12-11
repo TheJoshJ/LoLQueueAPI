@@ -17,7 +17,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/leaderboard": {
+        "/v1/leaderboard": {
             "get": {
                 "description": "Get the leaderboards for a specifc discord server ID",
                 "consumes": [
@@ -49,7 +49,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/lookup/{srv}/{usr}": {
+        "/v1/lookup/{srv}/{usr}": {
             "get": {
                 "description": "Gets the users account information by their Username and Server",
                 "consumes": [
@@ -59,7 +59,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "accounts"
+                    "Riot"
                 ],
                 "summary": "Show an account",
                 "parameters": [
@@ -97,7 +97,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/match/{srv}/{usr}": {
+        "/v1/match/{srv}/{usr}": {
             "get": {
                 "description": "Show the past 10 matches",
                 "consumes": [
@@ -107,7 +107,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "accounts"
+                    "Riot"
                 ],
                 "summary": "Show recent matches",
                 "parameters": [
@@ -155,7 +155,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/ping": {
+        "/v1/ping": {
             "get": {
                 "description": "Ping the API service",
                 "consumes": [
@@ -178,7 +178,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/user": {
+        "/v1/user": {
             "post": {
                 "description": "Creates and stores the users data to be used when executing commands/api calls.",
                 "consumes": [
@@ -188,18 +188,134 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "accounts"
+                    "profiles"
                 ],
                 "summary": "Create an account",
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "409": {
+                        "description": "Conflict"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/v1/user/{id}": {
+            "get": {
+                "description": "Looks up a users profile to display which servers they are part of in addidion to their stored riot account information.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profiles"
+                ],
+                "summary": "Look up a profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.UserDB"
+                            "$ref": "#/definitions/models.UserLookupResponse"
                         }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "put": {
+                "description": "Updates the users profile.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profiles"
+                ],
+                "summary": "Update a profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
                     },
                     "400": {
                         "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "409": {
+                        "description": "Conflict"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes the users profile by supplying the discord id in the path along with the server ID as a URL param.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profiles"
+                ],
+                "summary": "Delete a profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "string serverid",
+                        "name": "discordID",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
                     },
                     "404": {
                         "description": "Not Found"
@@ -232,10 +348,10 @@ const docTemplate = `{
         "models.Leaderboard": {
             "type": "object",
             "properties": {
-                "current_objective": {
+                "currentObjective": {
                     "type": "string"
                 },
-                "discord_server_id": {
+                "discordServerID": {
                     "type": "string"
                 },
                 "leaders": {
@@ -244,7 +360,7 @@ const docTemplate = `{
                         "$ref": "#/definitions/models.Leaders"
                     }
                 },
-                "sec_till_next_obj": {
+                "secTillNextObj": {
                     "type": "integer"
                 }
             }
@@ -258,7 +374,7 @@ const docTemplate = `{
                 "score": {
                     "type": "string"
                 },
-                "summoner_name": {
+                "summonerName": {
                     "type": "string"
                 }
             }
@@ -321,26 +437,20 @@ const docTemplate = `{
                 }
             }
         },
-        "models.UserDB": {
+        "models.UserLookupResponse": {
             "type": "object",
             "properties": {
-                "RankedTier": {
+                "riotServer": {
                     "type": "string"
                 },
-                "discordid": {
+                "riotUsername": {
                     "type": "string"
                 },
-                "id": {
-                    "type": "string"
-                },
-                "puuid": {
-                    "type": "string"
-                },
-                "server": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
+                "servers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         }
